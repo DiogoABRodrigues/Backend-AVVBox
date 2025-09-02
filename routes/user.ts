@@ -39,20 +39,31 @@ router.post('/register', async (req, res) => {
 // ======================
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { login, password } = req.body; // login pode ser email ou username
 
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: 'Email não encontrado' });
+    // Procura usuário pelo email OU pelo username
+    const user = await User.findOne({
+      $or: [
+        { email: login.toLowerCase() },
+        { name: login } // ou o campo que você usa para username
+      ]
+    });
+
+    if (!user) return res.status(400).json({ message: 'Usuário não encontrado' });
 
     const validPassword = await bcrypt.compare(password, user.password as string);
     if (!validPassword) return res.status(400).json({ message: 'Senha incorreta' });
 
     // Aqui você pode gerar um token JWT se quiser
-    res.json({ message: 'Login bem-sucedido', user: { id: user._id, name: user.name, role: user.role } });
+    res.json({
+      message: 'Login bem-sucedido',
+      user: { id: user._id, name: user.name, role: user.role }
+    });
   } catch (err) {
     res.status(500).json({ message: 'Erro ao fazer login', error: err });
   }
 });
+
 
 // ======================
 // Listar todos os usuários
