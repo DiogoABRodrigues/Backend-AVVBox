@@ -1,12 +1,30 @@
 import { Request, Response } from "express";
 import { notificationService } from "../services/notificationService";
+import { io } from "../server";
 
 export const notificationController = {
   async create(req: Request, res: Response) {
     try {
       const { userId } = req.params;
       const { title, body, target } = req.body;
+
+      if (!title || !target) {
+        return res.status(400).json({ message: "title, body e target são obrigatórios" });
+      }
+      // Cria notificações usando o service
       const notifications = await notificationService.createNotification(userId, title, body, target);
+
+      const targetIds = Array.isArray(target) ? target : [target];
+
+      targetIds.forEach((tId: string) => {
+        const userNotifications = notifications.filter(n =>
+          n.target?.includes(tId)   // verifica se a notificação tem esse user no target
+        );
+
+        io.to(tId).emit("new-notification", userNotifications);
+        console.log(`Enviando notificação para user ${tId}:`, userNotifications);
+      });
+
       res.status(201).json({ message: "Notificações criadas", notifications });
     } catch (err: any) {
       res.status(500).json({ message: err.message || "Erro ao criar notificações", error: err });
