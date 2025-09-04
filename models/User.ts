@@ -13,14 +13,6 @@ const UserSchema = new Schema({
   
   // role do user
   role: { type: String, enum: ['atleta', 'PT', 'Admin'], required: true },
-
-  measures: {
-    height: { type: Number }, // altura em cm
-    weight: { type: Number }, // peso em kg
-    bodyFat: { type: Number }, // percentagem de gordura corporal
-    muscleMass: { type: Number }, // massa muscular em kg
-    visceralFat: { type: Number }, // gordura visceral
-  },
 });
 
 export const User = model('User', UserSchema);
