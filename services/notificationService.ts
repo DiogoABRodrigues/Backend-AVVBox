@@ -13,8 +13,7 @@ export const notificationService = {
       const users = await User.find({});
       recipients = users.map(u => u._id.toString());
     } else if (target === "my") {
-      // Ajustar conforme o modelo do User
-      //recipients = sender.athletes?.map(a => a.toString()) || [];
+      recipients = Array.isArray(sender.atheletes) ? sender.atheletes.map((a: any) => a.toString()) : [];
     } else if (Array.isArray(target)) {
       recipients = target;
     } else {

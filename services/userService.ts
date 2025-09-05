@@ -54,5 +54,27 @@ export const userService = {
     if (!user) throw new Error("Usuário não encontrado");
 
     return user;
+  },
+
+  async getMyAthletes(userId: string) {
+    const user = await User.findById(userId);
+    if (!user) throw new Error("Usuário não encontrado");
+    if (user.role !== 'PT') throw new Error("Apenas PTs têm atletas");
+
+    //pts tem um parametro athletes que é um array de ids de atletas
+    const athletes = await User.find({ _id: { $in: user.atheletes } }).select("-password");
+    return athletes;  
+  },
+
+  async deactivate(id: string) {
+    const user = await User.findByIdAndUpdate(id, { active: false }, { new: true }).select("-password");
+    if (!user) throw new Error("Usuário não encontrado");
+    return user;
+  },
+
+  async activate(id: string) {
+    const user = await User.findByIdAndUpdate(id, { active: true }, { new: true }).select("-password");
+    if (!user) throw new Error("Usuário não encontrado");
+    return user;
   }
 };

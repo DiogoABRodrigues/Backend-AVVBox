@@ -8,11 +8,13 @@ const UserSchema = new Schema({
   // referência para o PT principal (pode ser null se for PT/Admin)
   coach: { type: Types.ObjectId, ref: 'User', default: null },
   
-  // array de coaches substitutos
-  subs: [{ type: Types.ObjectId, ref: 'User' }],
-  
   // role do user
-  role: { type: String, enum: ['atleta', 'PT', 'Admin'], required: true },
+  role: { type: String, enum: ['atleta', 'PT'], required: true },
+
+  // lista ids de atletas (apenas para PTs)
+  atheletes: { type: Types.ObjectId, ref: 'User', default: null },
+
+  active : { type: Boolean, default: true },
 });
 
 export const User = model('User', UserSchema);

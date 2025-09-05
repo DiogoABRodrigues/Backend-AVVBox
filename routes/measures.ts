@@ -1,72 +1,21 @@
-import { Router } from 'express';
-import { Measures } from '../models/Measures';
-import { User } from '../models/User';
+import { Router } from "express";
+import { measuresController } from "../controllers/measuresController";
 
 const router = Router();
 
-// ======================
-// Criar nova medida para um usuário
-// ======================
-router.post('/:userId', async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const { height, weight, bodyFat, muscleMass, visceralFat } = req.body;
+// criar medida
+router.post("/", measuresController.create);
 
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
+// buscar medidas de um user
+router.get("/atual-measures/:userId", measuresController.getAtualByUser);
 
-    const measure = new Measures({
-      user: userId,
-      height,
-      weight,
-      bodyFat,
-      muscleMass,
-      visceralFat
-    });
+// buscar medida de objetivo de um user
+router.get("/goal/:userId", measuresController.getGoalByUser);
 
-    await measure.save();
-    res.status(201).json({ message: 'Medida criada', measure });
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao criar medida', error: err });
-  }
-});
+// buscar medidas atualizadas de um user
+router.get("/last-measures/:userId", measuresController.getLastByUser);
 
-// ======================
-// Listar todas as medidas de um usuário (histórico)
-// ======================
-router.get('/:userId', async (req, res) => {
-  try {
-    const measures = await Measures.find({ user: req.params.userId }).sort({ date: -1 });
-    res.json(measures);
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao listar medidas', error: err });
-  }
-});
-
-// ======================
-// Atualizar medida específica
-// ======================
-router.put('/:id', async (req, res) => {
-  try {
-    const measure = await Measures.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!measure) return res.status(404).json({ message: 'Medida não encontrada' });
-    res.json({ message: 'Medida atualizada', measure });
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao atualizar medida', error: err });
-  }
-});
-
-// ======================
-// Deletar medida específica
-// ======================
-router.delete('/:id', async (req, res) => {
-  try {
-    const measure = await Measures.findByIdAndDelete(req.params.id);
-    if (!measure) return res.status(404).json({ message: 'Medida não encontrada' });
-    res.json({ message: 'Medida deletada' });
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao deletar medida', error: err });
-  }
-});
+// editar medida
+router.put("/:id", measuresController.update);
 
 export default router;
