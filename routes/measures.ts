@@ -6,6 +6,9 @@ const router = Router();
 // criar medida
 router.post("/", measuresController.create);
 
+//get all
+router.get("/:userId", measuresController.getByUser);
+
 // buscar medidas de um user
 router.get("/atual-measures/:userId", measuresController.getAtualByUser);
 
