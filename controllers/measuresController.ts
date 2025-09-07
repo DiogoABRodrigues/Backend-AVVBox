@@ -63,4 +63,18 @@ export const measuresController = {
       res.status(500).json({ message: err.message || "Erro ao atualizar medida" });
     }
   },
+
+  // Deletar medida mais recente e com menos de 30 dias
+  async deleteMeasure(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const deleted = await measuresService.deleteMeasure(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Medida não encontrada ou não pode ser deletada" });
+      }
+      res.json({ message: "Medida deletada com sucesso" });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message || "Erro ao deletar medida" });
+    }
+  }
 };

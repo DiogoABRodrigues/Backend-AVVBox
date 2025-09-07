@@ -28,4 +28,18 @@ export const measuresService = {
   async updateMeasure(measureId: string, data: any) {
     return await Measures.findByIdAndUpdate(measureId, data, { new: true });
   },
+
+  async deleteMeasure(measureId: string) {
+    const measure = await Measures.findById(measureId);
+    if (!measure) {
+      return null;
+    }
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    if (measure.type === 'atual' && measure.date >= thirtyDaysAgo) {
+      return await Measures.findByIdAndDelete(measureId);
+    }
+    return null;
+  }
 };

@@ -21,4 +21,7 @@ router.get("/last-measures/:userId", measuresController.getLastByUser);
 // editar medida
 router.put("/:id", measuresController.update);
 
+// deletar medida mais recente e com menos de 30 dias
+router.delete("/:id", measuresController.deleteMeasure);
+
 export default router;
