@@ -6,13 +6,13 @@ const UserSchema = new Schema({
   password: { type: String, required: true },
   
   // referência para o PT principal (pode ser null se for PT/Admin)
-  coach: { type: Types.ObjectId, ref: 'User', default: null },
+  coach: [{ type: Types.ObjectId, ref: 'User', default: null }],
   
   // role do user
-  role: { type: String, enum: ['atleta', 'PT'], required: true },
+  role: { type: String, enum: ['atleta', 'PT', 'Admin'], required: true },
 
   // lista ids de atletas (apenas para PTs)
-  atheletes: { type: Types.ObjectId, ref: 'User', default: null },
+  atheletes: [{ type: Types.ObjectId, ref: 'User', default: [] }],
 
   active : { type: Boolean, default: true },
 });

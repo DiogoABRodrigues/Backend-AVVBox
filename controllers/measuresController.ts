@@ -76,5 +76,6 @@ export const measuresController = {
     } catch (err: any) {
       res.status(500).json({ message: err.message || "Erro ao deletar medida" });
     }
-  }
+  },
+
 };

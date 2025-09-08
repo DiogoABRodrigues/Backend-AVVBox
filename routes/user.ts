@@ -19,5 +19,6 @@ router.get("/:id", userController.getById);
 router.put("/deactivate/:id", userController.deactivate);
 // Ativar usuário por ID
 router.put("/activate/:id", userController.activate);
-
+// Atualizar informações básicas do usuário
+router.put("/update-basic-info/:id", userController.updateBasicInfo);
 export default router;

@@ -1,11 +1,12 @@
 import bcrypt from "bcrypt";
 import { User } from "../models/User";
+import { measuresService } from "./measuresService";
 
 const saltRounds = 10;
 
 export const userService = {
   async register(data: any) {
-    const { name, email, password, role, coach, subs } = data;
+    const { name, email, password, role, coach, atheletes, active } = data;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) throw new Error("Email já cadastrado");
@@ -18,10 +19,21 @@ export const userService = {
       password: hashedPassword,
       role,
       coach: coach || null,
-      subs: subs || []
+      atheletes: atheletes || null,
+      active: active !== undefined ? active : true
     });
 
     await newUser.save();
+
+    await measuresService.createMeasure({
+      user: newUser._id,
+      type: 'goal',
+      weight: 0,
+      height: 0,
+      bodyFat: 0,
+      muscleMass: 0,
+      visceralFat: 0,
+    });
     return newUser;
   },
 
@@ -47,12 +59,10 @@ export const userService = {
 
   async getById(id: string) {
     const user = await User.findById(id)
-      .select("-password")
-      .populate("coach")
-      .populate("subs");
-
+      .populate('coach', '-password')
+      .populate('atheletes', '-password')
+      .select("-password");
     if (!user) throw new Error("Usuário não encontrado");
-
     return user;
   },
 
@@ -76,5 +86,20 @@ export const userService = {
     const user = await User.findByIdAndUpdate(id, { active: true }, { new: true }).select("-password");
     if (!user) throw new Error("Usuário não encontrado");
     return user;
+  },
+
+  async updateBasicInfo(id: string, data: { name?: string; email?: string }) {
+    const { name, email } = data;
+
+    const user = await User.findByIdAndUpdate(
+      id,
+      { ...(name && { name }), ...(email && { email }) }, // só mete se existir
+      { new: true }
+    ).select("-password");
+
+    if (!user) throw new Error("Usuário não encontrado");
+
+    return user;
   }
+
 };
