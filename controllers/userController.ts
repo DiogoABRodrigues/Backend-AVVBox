@@ -33,6 +33,15 @@ export const userController = {
     }
   },
 
+  async getAllIncludingInactive(req: Request, res: Response) {
+    try {
+      const users = await userService.getAll();
+      res.json(users);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message || "Erro ao listar usuários", error: err });
+    }
+  },
+
   async getById(req: Request, res: Response) {
     try {
       const user = await userService.getById(req.params.id);

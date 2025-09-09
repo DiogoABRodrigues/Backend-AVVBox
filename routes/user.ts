@@ -9,6 +9,8 @@ router.post("/register", userController.register);
 router.post("/login", userController.login);
 // Listar todos os usuários ativos
 router.get("/", userController.getAll);
+// Listar todos os usuários (ativos e inativos)
+router.get("/all", userController.getAllIncludingInactive);
 // get mine atheletes
 router.get("/my-atheletes/:userId", userController.getMine);
 // Listar todos os usuários inativos

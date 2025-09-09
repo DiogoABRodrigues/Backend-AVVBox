@@ -6,16 +6,16 @@ const saltRounds = 10;
 
 export const userService = {
   async register(data: any) {
-    const { name, email, password, role, coach, atheletes, active } = data;
+    const { name, phoneNumber, password, role, coach, atheletes, active } = data;
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) throw new Error("Email já cadastrado");
+    const existingUser = await User.findOne({ phoneNumber });
+    if (existingUser) throw new Error("Número de telefone já cadastrado");
 
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const newUser = new User({
       name,
-      email,
+      phoneNumber,
       password: hashedPassword,
       role,
       coach: coach || null,
@@ -40,7 +40,7 @@ export const userService = {
   async login(login: string, password: string) {
     const user = await User.findOne({
       $or: [
-        { email: login.toLowerCase() },
+        { phoneNumber: login },
         { name: login }
       ]
     });
@@ -88,12 +88,12 @@ export const userService = {
     return user;
   },
 
-  async updateBasicInfo(id: string, data: { name?: string; email?: string }) {
-    const { name, email } = data;
+  async updateBasicInfo(id: string, data: { name?: string; phoneNumber?: string }) {
+    const { name, phoneNumber } = data;
 
     const user = await User.findByIdAndUpdate(
       id,
-      { ...(name && { name }), ...(email && { email }) }, // só mete se existir
+      { ...(name && { name }), ...(phoneNumber && { phoneNumber }) }, // só mete se existir
       { new: true }
     ).select("-password");
 
