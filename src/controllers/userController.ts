@@ -90,9 +90,9 @@ export const userController = {
     }
   },
 
-  async updateBasicInfo(req: Request, res: Response) {
+  async update(req: Request, res: Response) {
     try {
-      const user = await userService.updateBasicInfo(req.params.id, req.body);
+      const user = await userService.update(req.params.id, req.body);
       res.json(user);
     } catch (err: any) {
       res.status(400).json({ message: err.message || "Erro ao atualizar informações", error: err });

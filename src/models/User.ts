@@ -8,8 +8,8 @@ const UserSchema = new Schema({
   password: { type: String, required: true },
   
   // referência para o PT principal (pode ser null se for PT/Admin)
-  coach: [{ type: Types.ObjectId, ref: 'User', default: null }],
-  
+  coach: [{ type: Types.ObjectId, ref: 'User', default: null }, { size: 1 }],
+
   // role do user
   role: { type: String, enum: ['atleta', 'PT', 'Admin'], required: true },
 

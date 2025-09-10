@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { User } from "../models/User";
 import { measuresService } from "./measuresService";
-
+import { settingsService } from "./settingsService";
 const saltRounds = 10;
 
 export const userService = {
@@ -34,6 +34,8 @@ export const userService = {
       muscleMass: 0,
       visceralFat: 0,
     });
+
+    await settingsService.create(newUser._id.toString(), {});
     return newUser;
   },
 
@@ -88,18 +90,28 @@ export const userService = {
     return user;
   },
 
-  async updateBasicInfo(id: string, data: { name?: string; phoneNumber?: string }) {
-    const { name, phoneNumber } = data;
+  async update(id: string, data: { 
+    name?: string; 
+    phoneNumber?: string; 
+    role?: string; 
+    coach?: string; 
+    atheletes?: string[]; 
+  }) {
+    const { name, phoneNumber, role, coach, atheletes } = data;
 
-    const user = await User.findByIdAndUpdate(
-      id,
-      { ...(name && { name }), ...(phoneNumber && { phoneNumber }) }, // só mete se existir
-      { new: true }
-    ).select("-password");
+    // constrói update dinâmico
+    const updateData: Record<string, any> = {};
+    if (name) updateData.name = name;
+    if (phoneNumber) updateData.phoneNumber = phoneNumber;
+    if (role) updateData.role = role;
+    if (coach) updateData.coach = coach;
+    if (atheletes) updateData.atheletes = atheletes;
+
+    const user = await User.findByIdAndUpdate(id, updateData, { new: true })
+      .select("-password");
 
     if (!user) throw new Error("Usuário não encontrado");
 
     return user;
   }
-
 };

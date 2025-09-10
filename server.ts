@@ -5,9 +5,10 @@ import { Server } from "socket.io";
 import http from "http";
 
 import './db';
-import measuresRoutes from './routes/measures';
-import usersRoutes from './routes/user';
-import notificationsRoutes from './routes/notifications';
+import measuresRoutes from './src/routes/measures';
+import usersRoutes from './src/routes/user';
+import notificationsRoutes from './src/routes/notifications';
+import settingsRoutes from './src/routes/settings';
 
 const app = express();
 const server = http.createServer(app);
@@ -19,7 +20,7 @@ app.use(bodyParser.json());
 app.use('/measures', measuresRoutes);
 app.use('/users', usersRoutes);
 app.use('/notifications', notificationsRoutes);
-
+app.use('/settings', settingsRoutes);
 // Inicializa Socket.IO
 export const io = new Server(server, {
   cors: {

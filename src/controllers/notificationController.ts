@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { notificationService } from "../services/notificationService";
-import { io } from "../server";
+import { io } from "../../server";
 
 export const notificationController = {
   async create(req: Request, res: Response) {
