@@ -23,6 +23,8 @@ const UserSchema = new Schema({
   verified: { type: Boolean, default: false },
 
   verificationToken: { type: String, default: null },
+
+  passwordResetCode: { type: String, default: null },
 });
 
 export const User = model('User', UserSchema);

@@ -9,6 +9,12 @@ router.post("/register", userController.register);
 router.get("/verify", userController.verify);
 // Login de usuário
 router.post("/login", userController.login);
+// Solicitar redefinição de senha
+router.post("/request-password-reset", userController.requestPasswordReset);
+// reset-password-with-code
+router.post("/reset-password-with-code", userController.resetPasswordWithCode);
+// reenviar email de verificação
+router.post("/resend-verification", userController.resendVerificationEmail);
 // Listar todos os usuários ativos
 router.get("/", userController.getAll);
 // Listar todos os usuários (ativos e inativos)

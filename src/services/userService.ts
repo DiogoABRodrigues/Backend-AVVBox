@@ -52,20 +52,49 @@ async register(data: any) {
     return { message: "Conta verificada com sucesso!" };
   },
 
+  async resendVerificationEmail(email: string) {
+    const user = await User.findOne({ email });
+    if (!user) throw new Error("Usuário não encontrado");
+
+    // Enviar email de verificação
+    await emailService.sendVerificationEmail(email, user.verificationToken as string);
+  },
+
+  async requestPasswordReset(email: string) {
+    const user = await User.findOne({ email });
+    if (!user) throw new Error("Usuário não encontrado");
+
+    // Gera código de redefinição
+    const passwordResetCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    user.passwordResetCode = passwordResetCode;
+    await user.save();
+    // Enviar email de redefinição de senha
+    await emailService.sendPasswordResetEmail(email, passwordResetCode);
+  },
+
+  async resetPasswordWithCode(email: string, resetCode: string, newPassword: string) {
+    const user = await User.findOne({ email, passwordResetCode: resetCode });
+    if (!user) throw new Error("Código de redefinição inválido");
+
+    // Hash da nova senha
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+    user.password = hashedPassword;
+    user.passwordResetCode = null;
+    await user.save();
+
+    return { message: "Senha redefinida com sucesso!" };
+  },
+
   async login(login: string, password: string) {
-    const user = await User.findOne({
-      $or: [
-        { email: login },
-        { name: login }
-      ]
-    });
+    const user = await User.findOne({ email: login });
 
     if (!user) throw new Error("Usuário não encontrado");
 
     const validPassword = await bcrypt.compare(password, user.password as string);
     if (!validPassword) throw new Error("Senha incorreta");
 
-    return { id: user._id, name: user.name, role: user.role };
+    return { id: user._id, name: user.name, role: user.role, email: user.email, verified: user.verified };
   },
 
   async getAll() {
@@ -77,6 +106,12 @@ async register(data: any) {
       .populate('coach', '-password')
       .populate('atheletes', '-password')
       .select("-password");
+    if (!user) throw new Error("Usuário não encontrado");
+    return user;
+  },
+
+  async getByEmail(email: string) {
+    const user = await User.findOne({ email }).select("-password");
     if (!user) throw new Error("Usuário não encontrado");
     return user;
   },

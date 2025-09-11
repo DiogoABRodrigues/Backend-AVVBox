@@ -23,4 +23,19 @@ export const emailService = {
       `,
     });
   },
+
+  async sendPasswordResetEmail(email: string, resetCode: string) {
+    await transporter.sendMail({
+      from: `<${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "RC app - Redefinição de senha",
+      html: `
+        <h3>Redefinição de senha</h3>
+        <p>Utiliza o seguinte código para redefinir a tua senha:</p>
+        <h2>${resetCode}</h2>
+      `,
+    });
+  },
 };
+
+
