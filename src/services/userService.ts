@@ -1,48 +1,61 @@
-import bcrypt from "bcrypt";
-import { User } from "../models/User";
 import { measuresService } from "./measuresService";
 import { settingsService } from "./settingsService";
+import bcrypt from "bcrypt";
+import { v4 as uuidv4 } from "uuid";
+import { User } from "../models/User";
+import { emailService } from "./emailService";
+
 const saltRounds = 10;
 
 export const userService = {
-  async register(data: any) {
-    const { name, phoneNumber, password, role, coach, atheletes, active } = data;
+async register(data: any) {
+    const { name, email, phoneNumber, password, role, coach, athletes, active } = data;
 
-    const existingUser = await User.findOne({ phoneNumber });
-    if (existingUser) throw new Error("Número de telefone já cadastrado");
+    // Verifica se já existe
+    const existingUser = await User.findOne({ email });
+    if (existingUser) throw new Error("Email já cadastrado");
 
+    // Hash da password
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const newUser = new User({
+    // Token de verificação
+    const verificationToken = uuidv4();
+
+    // Cria utilizador não verificado
+    const newUser = await User.create({
       name,
+      email,
       phoneNumber,
       password: hashedPassword,
       role,
       coach: coach || null,
-      atheletes: atheletes || null,
-      active: active !== undefined ? active : true
+      athletes: athletes || null,
+      active: active !== undefined ? active : true,
+      verified: false,
+      verificationToken,
     });
 
-    await newUser.save();
+    // Enviar email de verificação
+    await emailService.sendVerificationEmail(email, verificationToken);
 
-    await measuresService.createMeasure({
-      user: newUser._id,
-      type: 'goal',
-      weight: 0,
-      height: 0,
-      bodyFat: 0,
-      muscleMass: 0,
-      visceralFat: 0,
-    });
-
-    await settingsService.create(newUser._id.toString(), {});
     return newUser;
+  },
+
+  async verifyAccount(token: string) {
+    let user = await User.findOne({ verificationToken: token });
+    if (!user) throw new Error("Token inválido");
+
+    user.verified = true;
+    user.verificationToken = null;
+    await user.save();
+
+    return { message: "Conta verificada com sucesso!" };
   },
 
   async login(login: string, password: string) {
     const user = await User.findOne({
       $or: [
-        { phoneNumber: login },
+        { email: login },
         { name: login }
       ]
     });
@@ -91,17 +104,19 @@ export const userService = {
   },
 
   async update(id: string, data: { 
-    name?: string; 
-    phoneNumber?: string; 
-    role?: string; 
-    coach?: string; 
-    atheletes?: string[]; 
+    name?: string;
+    email?: string;
+    phoneNumber?: string;
+    role?: string;
+    coach?: string;
+    atheletes?: string[];
   }) {
-    const { name, phoneNumber, role, coach, atheletes } = data;
+    const { name, email, phoneNumber, role, coach, atheletes } = data;
 
     // constrói update dinâmico
     const updateData: Record<string, any> = {};
     if (name) updateData.name = name;
+    if (email) updateData.email = email;
     if (phoneNumber) updateData.phoneNumber = phoneNumber;
     if (role) updateData.role = role;
     if (coach) updateData.coach = coach;

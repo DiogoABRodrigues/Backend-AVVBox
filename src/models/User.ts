@@ -3,6 +3,8 @@ import { Schema, model, Types } from 'mongoose';
 const UserSchema = new Schema({
   name: { type: String, required: true },
 
+  email: { type: String, required: true, unique: true },
+
   phoneNumber : { type: String, required: true, unique: true },
 
   password: { type: String, required: true },
@@ -17,6 +19,10 @@ const UserSchema = new Schema({
   atheletes: [{ type: Types.ObjectId, ref: 'User', default: [] }],
 
   active : { type: Boolean, default: true },
+
+  verified: { type: Boolean, default: false },
+
+  verificationToken: { type: String, default: null },
 });
 
 export const User = model('User', UserSchema);

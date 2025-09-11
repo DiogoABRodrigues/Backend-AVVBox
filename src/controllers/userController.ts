@@ -5,9 +5,23 @@ export const userController = {
   async register(req: Request, res: Response) {
     try {
       const user = await userService.register(req.body);
-      res.status(201).json({ message: "Usuário criado com sucesso", user });
+      res.status(201).json({ message: "Usuário criado com sucesso, verifica o email!", user });
     } catch (err: any) {
-      res.status(400).json({ message: err.message || "Erro ao criar usuário", error: err });
+      res.status(400).json({ message: err.message || "Erro ao criar usuário" });
+    }
+  },
+
+  async verify(req: Request, res: Response) {
+    try {
+      const { token } = req.query;
+      if (!token || typeof token !== "string") {
+        return res.status(400).json({ message: "Token inválido" });
+      }
+
+      const result = await userService.verifyAccount(token);
+      res.json(result);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message || "Erro ao verificar conta" });
     }
   },
 
@@ -25,8 +39,8 @@ export const userController = {
     try {
       let users = await userService.getAll();
 
-      //only the active ones
-      users = users.filter(user => user.active);
+      //only the active ones and verified
+      users = users.filter(user => user.active && user.verified);
       res.json(users);
     } catch (err: any) {
       res.status(500).json({ message: err.message || "Erro ao listar usuários", error: err });
@@ -35,7 +49,9 @@ export const userController = {
 
   async getAllIncludingInactive(req: Request, res: Response) {
     try {
-      const users = await userService.getAll();
+      //remove the unverified ones
+      let users = await userService.getAll();
+      users = users.filter(user => user.verified);
       res.json(users);
     } catch (err: any) {
       res.status(500).json({ message: err.message || "Erro ao listar usuários", error: err });
@@ -44,7 +60,9 @@ export const userController = {
 
   async getById(req: Request, res: Response) {
     try {
+      //not the unverified ones
       const user = await userService.getById(req.params.id);
+      if (!user.verified) throw new Error("Usuário não verificado");
       res.json(user);
     } catch (err: any) {
       res.status(404).json({ message: err.message || "Usuário não encontrado", error: err });
@@ -55,7 +73,7 @@ export const userController = {
     try {
       let users = await userService.getAll();
       //only the inactive ones
-      users = users.filter(user => !user.active);
+      users = users.filter(user => !user.active && user.verified);
       res.json(users);
     } catch (err: any) {
       res.status(500).json({ message: err.message || "Erro ao listar usuários inativos", error: err });

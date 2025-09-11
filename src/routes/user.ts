@@ -5,6 +5,8 @@ const router = Router();
 
 // Registrar novo usuário
 router.post("/register", userController.register);
+// Verificar conta
+router.get("/verify", userController.verify);
 // Login de usuário
 router.post("/login", userController.login);
 // Listar todos os usuários ativos
