@@ -9,6 +9,8 @@ import measuresRoutes from './src/routes/measures';
 import usersRoutes from './src/routes/user';
 import notificationsRoutes from './src/routes/notifications';
 import settingsRoutes from './src/routes/settings';
+import availabilityRoutes from './src/routes/availability';
+import trainingRoutes from './src/routes/Training';
 
 const app = express();
 const server = http.createServer(app);
@@ -21,6 +23,9 @@ app.use('/measures', measuresRoutes);
 app.use('/users', usersRoutes);
 app.use('/notifications', notificationsRoutes);
 app.use('/settings', settingsRoutes);
+app.use('/availability', availabilityRoutes);
+app.use('/training', trainingRoutes);
+
 // Inicializa Socket.IO
 export const io = new Server(server, {
   cors: {

@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import { User } from "../models/User";
 import { emailService } from "./emailService";
+import { availabilityService } from "./availabilityService";
 
 const saltRounds = 10;
 
@@ -34,6 +35,20 @@ async register(data: any) {
       verified: false,
       verificationToken,
     });
+
+    await measuresService.createMeasure({
+      user: newUser._id,
+      type: 'goal',
+      weight: 0,
+      height: 0,
+      bodyFat: 0,
+      muscleMass: 0,
+      visceralFat: 0,
+    });
+
+    await availabilityService.create({ PT: newUser._id.toString() });
+
+    await settingsService.create(newUser._id.toString(), {});
 
     // Enviar email de verificação
     await emailService.sendVerificationEmail(email, verificationToken);
