@@ -12,7 +12,7 @@ const TrainingSchema = new Schema({
   athlete: { type: Types.ObjectId, ref: 'User', required: true },
 
   // Quem criou a proposta (PT ou Atleta)
-  proposedBy: { type: String, enum: ['PT', 'Athlete'], required: true },
+  proposedBy: { type: String, enum: ['PT', 'Athlete', 'Admin'], required: true },
 
   // Status de aceite do PT
   ptStatus: { type: String, enum: ['proposed', 'accepted', 'rejected'], default: 'proposed' },

@@ -2,6 +2,16 @@ import { Request, Response } from "express";
 import { trainingService } from "../services/trainingService";
 
 export class TrainingController {
+  async getByPT(req: Request, res: Response) {
+    try {
+      const { ptId } = req.params;
+      const trainings = await trainingService.getByPT(ptId);
+      res.json(trainings);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+  
   async create(req: Request, res: Response) {
     try {
       const { date, hour, duration, PT, athlete, proposedBy } = req.body;
@@ -49,5 +59,25 @@ export class TrainingController {
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
+  }
+
+  async getUpcoming(req: Request, res: Response) {
+    try {
+      const { userId } = req.params;
+      const trainings = await trainingService.getUpcoming(userId);
+      res.json(trainings);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    } 
+  }
+  //pending
+  async getPending(req: Request, res: Response) {
+    try {
+      const { userId } = req.params;
+      const trainings = await trainingService.getPending(userId);
+      res.json(trainings);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    } 
   }
 }

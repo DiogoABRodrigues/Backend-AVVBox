@@ -2,14 +2,26 @@ import { Training } from "../models/Training";
 import { Types } from "mongoose";
 
 export const trainingService = {
+  // Buscar treinos de um PT (sem rejeitados)
+  async getByPT(ptId: string) {
+    return await Training.find({ 
+      PT: new Types.ObjectId(ptId), 
+      overallStatus: { $ne: "rejected" } 
+    }).populate("PT", "name email").populate("athlete", "name email");
+  },
+
   async create(data: {
     date: Date;
     hour: string;
     duration?: number;
     PT: string;
     athlete: string;
-    proposedBy: "PT" | "Athlete";
+    proposedBy: "PT" | "Athlete" | "Admin";
   }) {
+    if (data.proposedBy === "Admin") {
+      data.proposedBy = "PT"; // Admin cria o treino em nome do PT
+    }
+
     const training = new Training({
       date: data.date,
       hour: data.hour,
@@ -29,9 +41,11 @@ export const trainingService = {
     const training = await Training.findById(trainingId);
     if (!training) throw new Error("Training not found");
 
-    if (training.PT == (userId)) {
+    const userObjectId = new Types.ObjectId(userId);
+
+    if ((training.PT as Types.ObjectId).equals(userObjectId)) {
       training.ptStatus = "accepted";
-    } else if (training.athlete == (userId)) {
+    } else if ((training.athlete as Types.ObjectId).equals(userObjectId)) {
       training.athleteStatus = "accepted";
     } else {
       throw new Error("User not part of this training");
@@ -48,9 +62,11 @@ export const trainingService = {
     const training = await Training.findById(trainingId);
     if (!training) throw new Error("Training not found");
 
-    if (training.PT == (userId)) {
+    const userObjectId = new Types.ObjectId(userId);
+
+    if ((training.PT as Types.ObjectId).equals(userObjectId)) {
       training.ptStatus = "rejected";
-    } else if (training.athlete == (userId)) {
+    } else if ((training.athlete as Types.ObjectId).equals(userObjectId)) {
       training.athleteStatus = "rejected";
     } else {
       throw new Error("User not part of this training");
@@ -64,4 +80,34 @@ export const trainingService = {
   async delete(trainingId: string) {
     return await Training.findByIdAndDelete(trainingId);
   },
+
+  // Próximos 7 dias
+  async getUpcoming(userId: string) {
+    const now = new Date();
+    const sevenDaysLater = new Date();
+    sevenDaysLater.setDate(now.getDate() + 7);
+
+    const userObjectId = new Types.ObjectId(userId);
+
+    return await Training.find({
+      $or: [{ PT: userObjectId }, { athlete: userObjectId }],
+      date: { $gte: now, $lte: sevenDaysLater },
+      overallStatus: "confirmed",
+    })
+      .sort({ date: 1, hour: 1 })
+      .populate("PT", "name email")
+      .populate("athlete", "name email");
+  },
+
+  async getPending(userId: string) {
+    const userObjectId = new Types.ObjectId(userId);
+
+    return await Training.find({
+      $or: [{ PT: userObjectId }, { athlete: userObjectId }],
+      overallStatus: "pending",
+    })
+      .sort({ date: 1, hour: 1 })
+      .populate("PT", "name email")
+      .populate("athlete", "name email");
+  }
 };
