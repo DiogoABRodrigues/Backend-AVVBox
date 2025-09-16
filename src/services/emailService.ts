@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { API_BASE_URL } from "../../config";
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -10,8 +11,7 @@ const transporter = nodemailer.createTransport({
 
 export const emailService = {
   async sendVerificationEmail(email: string, token: string) {
-    const verificationLink = `http://192.168.1.184:3000/users/verify?token=${token}`;
-
+    const verificationLink = `${API_BASE_URL}/users/verify?token=${token}`;
     await transporter.sendMail({
       from: `<${process.env.EMAIL_USER}>`,
       to: email,

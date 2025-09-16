@@ -10,7 +10,7 @@ import usersRoutes from './src/routes/user';
 import notificationsRoutes from './src/routes/notifications';
 import settingsRoutes from './src/routes/settings';
 import availabilityRoutes from './src/routes/availability';
-import trainingRoutes from './src/routes/Training';
+import trainingRoutes from './src/routes/training';
 
 const app = express();
 const server = http.createServer(app);
