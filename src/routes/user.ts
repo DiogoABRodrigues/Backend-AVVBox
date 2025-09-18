@@ -1,35 +1,31 @@
 import { Router } from "express";
 import { userController } from "../controllers/userController";
+import { authMiddleware } from "../middlewares/authMiddleware";
+import { authorizeRoles } from "../middlewares/authorizeRoles";
 
 const router = Router();
 
-// Registrar novo usuário
+// Público
 router.post("/register", userController.register);
-// Verificar conta
-router.get("/verify", userController.verify);
-// Login de usuário
 router.post("/login", userController.login);
-// Solicitar redefinição de senha
+router.get("/verify", userController.verify);
 router.post("/request-password-reset", userController.requestPasswordReset);
-// reset-password-with-code
 router.post("/reset-password-with-code", userController.resetPasswordWithCode);
-// reenviar email de verificação
 router.post("/resend-verification", userController.resendVerificationEmail);
-// Listar todos os usuários ativos
-router.get("/", userController.getAll);
-// Listar todos os usuários (ativos e inativos)
-router.get("/all", userController.getAllIncludingInactive);
-// get mine atheletes
-router.get("/my-atheletes/:userId", userController.getMine);
-// Listar todos os usuários inativos
-router.get("/inactive", userController.getAllInactive);
-// Obter usuário por ID
-router.get("/:id", userController.getById);
-// Desativar usuário por ID
-router.put("/deactivate/:id", userController.deactivate);
-// Ativar usuário por ID
-router.put("/activate/:id", userController.activate);
-// Atualizar informações básicas do usuário
-router.put("/update/:id", userController.update);
+
+// Protegido (só admins)
+router.get("/all", authMiddleware, authorizeRoles("Admin", "PT"), userController.getAllIncludingInactive);
+router.get("/inactive", authMiddleware, authorizeRoles("Admin"), userController.getAllInactive);
+router.put("/deactivate/:id", authMiddleware, authorizeRoles("Admin"), userController.deactivate);
+router.put("/activate/:id", authMiddleware, authorizeRoles("Admin"), userController.activate);
+
+// Protegido (só autenticados)
+router.get("/", authMiddleware, authorizeRoles("Admin", "PT"), userController.getAll);
+router.get("/my-atheletes/:userId", authMiddleware, authorizeRoles("Admin", "PT"), userController.getMine);
+router.get("/get-staff", authMiddleware, (req, res) => userController.getStaff(req, res));
+router.get("/:id", authMiddleware, userController.getById);
+
+// Protegido (qualquer user autenticado pode atualizar o próprio perfil)
+router.put("/update/:id", authMiddleware, userController.update);
 
 export default router;

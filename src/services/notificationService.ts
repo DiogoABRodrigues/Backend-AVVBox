@@ -1,35 +1,43 @@
 import { Notification } from "../models/Notifications";
 import { User } from "../models/User";
 import mongoose from "mongoose";
+import { userService } from "./userService";
 
 export const notificationService = {
-  async createNotification(senderId: string, title: string, body: string, target: string[] | "all" | "my") {
+  async createNotification(
+    senderId: string,
+    title: string,
+    body: string,
+    target: string[] | "all" | "my"
+  ) {
     const sender = await User.findById(senderId);
     if (!sender) throw new Error("Usuário remetente não encontrado");
+
+    if (Array.isArray(target) && target.length === 1 && (target[0] === "my" || target[0] === "all")) {
+      target = target[0] as "my" | "all";
+    }
 
     let recipients: string[] = [];
 
     if (target === "all") {
-      const users = await User.find({});
+      // Apenas utilizadores ativos
+      const users = await User.find({ active: true });
       recipients = users.map(u => u._id.toString());
     } else if (target === "my") {
-      recipients = Array.isArray(sender.atheletes) ? sender.atheletes.map((a: any) => a.toString()) : [];
+      recipients = sender.atheletes.map((athlete: any) => athlete.toString());
     } else if (Array.isArray(target)) {
       recipients = target;
     } else {
       throw new Error("Target inválido");
     }
 
-    const notifications = await Notification.insertMany(
-      recipients.map(r => ({
-        user: r,
-        title,
-        body,
-        target,
-      }))
-    );
+    const notification = await Notification.create({
+      title,
+      body,
+      target: recipients,
+    });
 
-    return notifications;
+    return notification;
   },
 
   async getAllNotifications() {

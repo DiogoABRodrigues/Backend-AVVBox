@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
 import { userService } from "../services/userService";
+import jwt from "jsonwebtoken";
+
+const SECRET_KEY = process.env.JWT_SECRET;
+if (!SECRET_KEY) throw new Error("JWT_SECRET não definido");
 
 export const userController = {
   async register(req: Request, res: Response) {
@@ -121,14 +125,28 @@ export const userController = {
   },
 
   async login(req: Request, res: Response) {
-    try {
-      const { login, password } = req.body;
-      const user = await userService.login(login, password);
-      res.json({ message: "Login bem-sucedido", user });
-    } catch (err: any) {
-      res.status(400).json({ message: err.message || "Erro ao fazer login", error: err });
-    }
-  },
+  try {
+    const { login, password } = req.body;
+
+    const user = await userService.login(login, password);
+
+    // Aqui geramos o JWT com id e role
+    const token = jwt.sign(
+      { id: user.id.toString(), role: user.role }, 
+      SECRET_KEY,
+      { expiresIn: "1d" } // expira em 1 dia
+    );
+
+    // Retorna user + token
+    res.json({ 
+      message: "Login bem-sucedido",
+      user: { id: user.id, name: user.name, role: user.role, verified: user.verified, active: user.active },
+      token
+    });
+  } catch (err: any) {
+    res.status(400).json({ message: err.message || "Erro ao fazer login", error: err });
+  }
+},
 
   async getAll(req: Request, res: Response) {
     try {
@@ -178,7 +196,8 @@ export const userController = {
   async getMine(req: Request, res: Response) {
     try {
       const userId = req.params.userId;
-      const athletes = await userService.getMyAthletes(userId);
+      let athletes = await userService.getMyAthletes(userId);
+      athletes = athletes.filter(user => user.active && user.verified);
       res.json(athletes);
     } catch (err: any) {
       res.status(500).json({ message: err.message || "Erro ao listar atletas", error: err });
@@ -209,6 +228,15 @@ export const userController = {
       res.json(user);
     } catch (err: any) {
       res.status(400).json({ message: err.message || "Erro ao atualizar informações", error: err });
+    }
+  },
+
+  async getStaff(req: Request, res: Response) {
+    try {
+      const users = await userService.getStaff();
+      res.json(users);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message || "Erro ao listar usuários", error: err });
     }
   },
 };

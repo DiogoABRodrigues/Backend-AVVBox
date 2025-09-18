@@ -11,11 +11,23 @@ import notificationsRoutes from './src/routes/notifications';
 import settingsRoutes from './src/routes/settings';
 import availabilityRoutes from './src/routes/availability';
 import trainingRoutes from './src/routes/training';
+import dotenv from "dotenv";
 
+dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-app.use(cors());
+const allowedOrigin = process.env.CORS_ORIGIN || "*";
+
+app.use(cors({ origin: allowedOrigin }));
+
+export const io = new Server(server, {
+  cors: {
+    origin: allowedOrigin,
+    methods: ["GET", "POST"],
+  },
+});
+
 app.use(bodyParser.json());
 
 // Rotas
@@ -25,14 +37,6 @@ app.use('/notifications', notificationsRoutes);
 app.use('/settings', settingsRoutes);
 app.use('/availability', availabilityRoutes);
 app.use('/training', trainingRoutes);
-
-// Inicializa Socket.IO
-export const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  },
-});
 
 io.on("connection", (socket) => {
   console.log("Cliente conectado:", socket.id);

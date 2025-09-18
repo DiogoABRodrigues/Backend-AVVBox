@@ -109,7 +109,7 @@ async register(data: any) {
     const validPassword = await bcrypt.compare(password, user.password as string);
     if (!validPassword) throw new Error("Senha incorreta");
 
-    return { id: user._id, name: user.name, role: user.role, email: user.email, verified: user.verified };
+    return { id: user._id, name: user.name, role: user.role, email: user.email, verified: user.verified, active: user.active};
   },
 
   async getAll() {
@@ -134,7 +134,7 @@ async register(data: any) {
   async getMyAthletes(userId: string) {
     const user = await User.findById(userId);
     if (!user) throw new Error("Usuário não encontrado");
-    if (user.role !== 'PT') throw new Error("Apenas PTs têm atletas");
+    if (user.role !== 'PT' && user.role !== 'Admin') throw new Error("Apenas PTs têm atletas");
 
     //pts tem um parametro athletes que é um array de ids de atletas
     const athletes = await User.find({ _id: { $in: user.atheletes } }).select("-password");
@@ -178,5 +178,9 @@ async register(data: any) {
     if (!user) throw new Error("Usuário não encontrado");
 
     return user;
+  },
+
+  async getStaff() {
+    return User.find({ role: { $in: ['PT', 'Admin'] }, active: true, verified: true }).select("-password");
   }
 };
