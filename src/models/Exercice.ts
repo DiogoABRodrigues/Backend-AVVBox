@@ -3,10 +3,11 @@ import { Schema, model, Types } from 'mongoose';
 // Schema para cada exercício
 const ExerciseSchema = new Schema({
   name: { type: String, required: true }, // ex: "Supino"
-  weight: { type: Number, required: true }, // ex: 45 (kg)
-  reps : { type: Number, required: false },   // ex: 10
-  sets : { type: Number, required: false }    // ex: 4
-}, { _id: false });
+  weight: { type: Number, required: false, default: 0 }, // ex: 45 (kg)
+  reps : { type: Number, required: false, default: 0 },   // ex: 10
+  sets : { type: Number, required: false, default: 0 },   // ex: 4
+  details : { type: String, required: false, default: "" } // ex: "Detalhes adicionais"
+});
 
 // Schema para cada grupo muscular
 const MuscleGroupSchema = new Schema({
@@ -23,6 +24,7 @@ const WeightsSchema = new Schema({
   legs: { type: MuscleGroupSchema, default: () => ({ exercises: [] }) },
   abs: { type: MuscleGroupSchema, default: () => ({ exercises: [] }) },
   cardio: { type: MuscleGroupSchema, default: () => ({ exercises: [] }) },
+  extra: { type: MuscleGroupSchema, default: () => ({ exercises: [] }) }
 }, { timestamps: true });
 
 export const Weights = model('Weights', WeightsSchema);

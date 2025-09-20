@@ -14,8 +14,8 @@ export class ExerciseController {
 }  
   async create(req: Request, res: Response) {
     try {
-      const { athleteId, group, name, weight, reps, sets } = req.body;
-      const result = await exerciseService.createExercise(athleteId, group, name, weight, reps, sets);
+      const { athleteId, group, name, weight, reps, sets, details } = req.body;
+      const result = await exerciseService.createExercise(athleteId, group, name, weight, reps, sets, details);
       res.status(201).json(result);
     } catch (error: any) {
       res.status(400).json({ message: error.message });
@@ -24,8 +24,8 @@ export class ExerciseController {
 
   async update(req: Request, res: Response) {
     try {
-      const { athleteId, group, exerciseName, newWeight, reps, sets } = req.body;
-      const result = await exerciseService.updateExercise(athleteId, group, exerciseName, newWeight, reps, sets);
+      const { _id, athleteId, group, exerciseName, newWeight, reps, sets, details } = req.body;
+      const result = await exerciseService.updateExercise(_id, athleteId, group, exerciseName, newWeight, reps, sets, details);
       res.json(result);
     } catch (error: any) {
       res.status(400).json({ message: error.message });

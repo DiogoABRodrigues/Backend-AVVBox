@@ -47,7 +47,7 @@ async register(data: any) {
       visceralFat: 0,
     });
 
-    await exerciseService.create({ athlete: newUser._id.toString() });
+    await exerciseService.create(newUser._id.toString());
     await availabilityService.create({ PT: newUser._id.toString() });
 
     await settingsService.create(newUser._id.toString(), {});
