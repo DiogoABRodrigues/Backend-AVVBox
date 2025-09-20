@@ -21,7 +21,7 @@ const TrainingSchema = new Schema({
   athleteStatus: { type: String, enum: ['proposed', 'accepted', 'rejected'], default: 'proposed' },
 
   // Status geral do treino
-  overallStatus: { type: String, enum: ['pending', 'confirmed', 'rejected'], default: 'pending' }
+  overallStatus: { type: String, enum: ['pending', 'confirmed', 'rejected', 'cancelled'], default: 'pending' }
 });
 
 export const Training = model('Training', TrainingSchema);

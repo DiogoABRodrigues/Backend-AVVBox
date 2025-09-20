@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { User } from "../models/User";
 import { emailService } from "./emailService";
 import { availabilityService } from "./availabilityService";
+import { exerciseService } from "./exerciseService";
 
 const saltRounds = 10;
 
@@ -46,6 +47,7 @@ async register(data: any) {
       visceralFat: 0,
     });
 
+    await exerciseService.create({ athlete: newUser._id.toString() });
     await availabilityService.create({ PT: newUser._id.toString() });
 
     await settingsService.create(newUser._id.toString(), {});

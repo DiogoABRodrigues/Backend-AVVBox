@@ -11,6 +11,8 @@ import notificationsRoutes from './src/routes/notifications';
 import settingsRoutes from './src/routes/settings';
 import availabilityRoutes from './src/routes/availability';
 import trainingRoutes from './src/routes/training';
+import exerciceRoutes from './src/routes/exercice';
+
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -37,6 +39,7 @@ app.use('/notifications', notificationsRoutes);
 app.use('/settings', settingsRoutes);
 app.use('/availability', availabilityRoutes);
 app.use('/training', trainingRoutes);
+app.use('/exercises', exerciceRoutes);
 
 io.on("connection", (socket) => {
   console.log("Cliente conectado:", socket.id);

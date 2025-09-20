@@ -17,11 +17,17 @@ router.patch("/:id/accept", authMiddleware, (req, res) => trainingController.acc
 // Rejeitar treino
 router.patch("/:id/reject", authMiddleware, (req, res) => trainingController.reject(req, res));
 
+// Cancelar treino
+router.patch("/:id/cancel", authMiddleware, (req, res) => trainingController.cancel(req, res));
+
 // Apagar treino (cancelar)
 router.delete("/:id", authMiddleware, (req, res) => trainingController.delete(req, res));
 
 ///upcoming/
 router.get("/upcoming/:userId", authMiddleware, (req, res) => trainingController.getUpcoming(req, res));
+
+// Próximos 15 dias
+router.get("/next15days/:userId", authMiddleware, (req, res) => trainingController.getUpcomingFifteenDays(req, res));
 
 // pending/
 router.get("/pending/:userId", authMiddleware, (req, res) => trainingController.getPending(req, res));

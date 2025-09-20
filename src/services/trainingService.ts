@@ -77,6 +77,26 @@ export const trainingService = {
     return await training.save();
   },
 
+  async cancel(trainingId: string, userId: string) {
+    const training = await Training.findById(trainingId);
+    if (!training) throw new Error("Training not found");
+
+    const userObjectId = new Types.ObjectId(userId);
+
+    if ((training.PT as Types.ObjectId).equals(userObjectId)) {
+      training.ptStatus = "accepted";
+    } else if ((training.athlete as Types.ObjectId).equals(userObjectId)) {
+      training.athleteStatus = "accepted";
+    } else {
+      throw new Error("User not part of this training");
+    }
+
+    training.overallStatus = "cancelled";
+
+    return await training.save();
+  },
+
+
   async delete(trainingId: string) {
     return await Training.findByIdAndDelete(trainingId);
   },
@@ -87,12 +107,37 @@ export const trainingService = {
     const sevenDaysLater = new Date();
     sevenDaysLater.setDate(now.getDate() + 7);
 
+    // Início do dia de hoje (00:00:00)
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
+
     const userObjectId = new Types.ObjectId(userId);
 
     return await Training.find({
       $or: [{ PT: userObjectId }, { athlete: userObjectId }],
-      date: { $gte: now, $lte: sevenDaysLater },
-      overallStatus: "confirmed",
+      date: { $gte: startOfToday, $lte: sevenDaysLater },
+      overallStatus: { $in: ["confirmed"] },
+    })
+      .sort({ date: 1, hour: 1 })
+      .populate("PT", "name email")
+      .populate("athlete", "name email");
+  },
+
+  async getUpcomingFifteenDays(userId: string) {
+    const now = new Date();
+    const fifteenDaysLater = new Date();
+    fifteenDaysLater.setDate(now.getDate() + 15);
+
+    // Início do dia de hoje (00:00:00)
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const userObjectId = new Types.ObjectId(userId);
+
+    return await Training.find({
+      $or: [{ PT: userObjectId }, { athlete: userObjectId }],
+      date: { $gte: startOfToday, $lte: fifteenDaysLater },
+      overallStatus: { $in: ["confirmed"] },
     })
       .sort({ date: 1, hour: 1 })
       .populate("PT", "name email")

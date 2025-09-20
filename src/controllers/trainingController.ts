@@ -51,6 +51,17 @@ export class TrainingController {
     }
   }
 
+  async cancel(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { userId } = req.body; // quem está a cancelar
+      const training = await trainingService.cancel(id, userId);
+      res.json(training);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
   async delete(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -70,6 +81,17 @@ export class TrainingController {
       res.status(500).json({ error: err.message });
     } 
   }
+
+  async getUpcomingFifteenDays(req: Request, res: Response) {
+    try {
+      const { userId } = req.params;
+      const trainings = await trainingService.getUpcomingFifteenDays(userId);
+      res.json(trainings);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
   //pending
   async getPending(req: Request, res: Response) {
     try {
