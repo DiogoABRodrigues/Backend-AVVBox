@@ -15,6 +15,7 @@ export class ExerciseController {
   async create(req: Request, res: Response) {
     try {
       const { athleteId, group, name, weight, reps, sets, details } = req.body;
+      if(!name) throw new Error("Nome do exercício é obrigatório");
       const result = await exerciseService.createExercise(athleteId, group, name, weight, reps, sets, details);
       res.status(201).json(result);
     } catch (error: any) {
@@ -34,8 +35,9 @@ export class ExerciseController {
 
   async delete(req: Request, res: Response) {
     try {
-      const { athleteId, group, exerciseName } = req.body;
-      const result = await exerciseService.deleteExercise(athleteId, group, exerciseName);
+      console.log("Request body:", req.body); // Log do corpo da requisição
+      const { athleteId, group, _id } = req.body;
+      const result = await exerciseService.deleteExercise(athleteId, group, _id);
       res.json(result);
     } catch (error: any) {
       res.status(400).json({ message: error.message });

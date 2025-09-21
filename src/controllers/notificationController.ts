@@ -9,7 +9,7 @@ export const notificationController = {
       const { title, body, target } = req.body;
 
       if (!title || !target) {
-        return res.status(400).json({ message: "title, body e target são obrigatórios" });
+        return res.status(400).json({ message: "Campos obrigatórios (título e remetente) não preenchidos." });
       }
       // Cria notificações usando o service
       const notification = await notificationService.createNotification(userId, title, body, target);

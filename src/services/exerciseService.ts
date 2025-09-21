@@ -35,7 +35,7 @@ export const exerciseService = {
       (ex) => ex.name.toLowerCase() === name.toLowerCase()
     );
     if (exists) {
-      throw new Error("Já existe um exercício com esse nome neste grupo muscular");
+      throw new Error("Já existe um exercício com esse nome neste grupo muscular.");
     }
 
   if (group === "extra") {
@@ -61,7 +61,7 @@ export const exerciseService = {
       await weightsDoc.save();
       return weightsDoc;
     }
-    
+
     exercise.weight = newWeight;
     exercise.reps = reps;
     exercise.sets = sets;
@@ -71,13 +71,13 @@ export const exerciseService = {
     return weightsDoc;
   },
 
-  async deleteExercise(athleteId: string, group: string, exerciseName: string) {
+  async deleteExercise(athleteId: string, group: string, _id: string) {
     const weightsDoc = await Weights.findOne({ athlete: athleteId });
     if (!weightsDoc) throw new Error("Atleta não encontrado");
 
     const groupExercises = (weightsDoc[group as keyof typeof weightsDoc] as any).exercises;
     const index = groupExercises.findIndex(
-      (ex: { name: string }) => ex.name.toLowerCase() === exerciseName.toLowerCase()
+      (ex: { _id: string }) => ex._id.toString() === _id
     );
 
     if (index === -1) throw new Error("Exercício não encontrado");
