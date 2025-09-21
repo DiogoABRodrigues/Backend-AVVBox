@@ -133,12 +133,15 @@ export const userService = {
     if (!validPassword) throw new Error("Senha incorreta");
 
     return {
-      id: user._id,
+      _id: user._id,
       name: user.name,
-      role: user.role,
       email: user.email,
-      verified: user.verified,
+      phoneNumber: user.phoneNumber,      
+      coach: user.coach,
+      role: user.role,
+      atheletes: user.atheletes,
       active: user.active,
+      verified: user.verified,
     };
   },
 

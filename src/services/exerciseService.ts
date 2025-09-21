@@ -59,6 +59,10 @@ export const exerciseService = {
       );
     }
 
+    //remover 0s à esquerda
+    weight = Math.abs(weight);
+    reps = Math.abs(reps);
+    sets = Math.abs(sets);
     if (group === "extra") {
       (weightsDoc[group as keyof typeof weightsDoc] as any).exercises.push({
         name,

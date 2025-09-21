@@ -154,7 +154,7 @@ export const userController = {
 
       // Aqui geramos o JWT com id e role
       const token = jwt.sign(
-        { id: user.id.toString(), role: user.role },
+        { id: user._id.toString(), role: user.role },
         SECRET_KEY,
         { expiresIn: "1d" }, // expira em 1 dia
       );
@@ -163,11 +163,15 @@ export const userController = {
       res.json({
         message: "Login bem-sucedido",
         user: {
-          id: user.id,
+          _id: user._id,
           name: user.name,
+          email: user.email,
+          phoneNumber: user.phoneNumber,      
+          coach: user.coach,
           role: user.role,
-          verified: user.verified,
+          atheletes: user.atheletes,
           active: user.active,
+          verified: user.verified,
         },
         token,
       });
