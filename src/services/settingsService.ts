@@ -14,7 +14,7 @@ export const settingsService = {
     return await Settings.findOneAndUpdate(
       { user: new Types.ObjectId(userId) },
       { $set: data },
-      { new: true, upsert: true } // cria se não existir
+      { new: true, upsert: true }, // cria se não existir
     );
   },
 
@@ -22,7 +22,7 @@ export const settingsService = {
     return await Settings.findOneAndUpdate(
       { user: new Types.ObjectId(userId) },
       {}, // não altera nada
-      { new: true, upsert: true, setDefaultsOnInsert: true } 
+      { new: true, upsert: true, setDefaultsOnInsert: true },
     );
   },
-}
+};

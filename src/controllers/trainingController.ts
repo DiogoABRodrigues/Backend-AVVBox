@@ -11,7 +11,7 @@ export class TrainingController {
       res.status(500).json({ error: err.message });
     }
   }
-  
+
   async create(req: Request, res: Response) {
     try {
       const { date, hour, duration, PT, athlete, proposedBy } = req.body;
@@ -79,7 +79,7 @@ export class TrainingController {
       res.json(trainings);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
-    } 
+    }
   }
 
   async getUpcomingFifteenDays(req: Request, res: Response) {
@@ -100,6 +100,6 @@ export class TrainingController {
       res.json(trainings);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
-    } 
+    }
   }
 }

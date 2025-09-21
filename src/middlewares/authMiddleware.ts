@@ -7,7 +7,11 @@ if (!SECRET_KEY) {
   throw new Error("JWT_SECRET não definido no .env");
 }
 
-export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const authMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader?.split(" ")[1]; // "Bearer <token>"
 

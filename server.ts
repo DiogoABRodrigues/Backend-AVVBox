@@ -1,17 +1,17 @@
-import express from 'express';
-import cors from 'cors';
-import bodyParser from 'body-parser';
+import express from "express";
+import cors from "cors";
+import bodyParser from "body-parser";
 import { Server } from "socket.io";
 import http from "http";
 
-import './db';
-import measuresRoutes from './src/routes/measures';
-import usersRoutes from './src/routes/user';
-import notificationsRoutes from './src/routes/notifications';
-import settingsRoutes from './src/routes/settings';
-import availabilityRoutes from './src/routes/availability';
-import trainingRoutes from './src/routes/training';
-import exerciceRoutes from './src/routes/exercice';
+import "./db";
+import measuresRoutes from "./src/routes/measures";
+import usersRoutes from "./src/routes/user";
+import notificationsRoutes from "./src/routes/notifications";
+import settingsRoutes from "./src/routes/settings";
+import availabilityRoutes from "./src/routes/availability";
+import trainingRoutes from "./src/routes/training";
+import exerciceRoutes from "./src/routes/exercice";
 
 import dotenv from "dotenv";
 
@@ -33,13 +33,13 @@ export const io = new Server(server, {
 app.use(bodyParser.json());
 
 // Rotas
-app.use('/measures', measuresRoutes);
-app.use('/users', usersRoutes);
-app.use('/notifications', notificationsRoutes);
-app.use('/settings', settingsRoutes);
-app.use('/availability', availabilityRoutes);
-app.use('/training', trainingRoutes);
-app.use('/exercises', exerciceRoutes);
+app.use("/measures", measuresRoutes);
+app.use("/users", usersRoutes);
+app.use("/notifications", notificationsRoutes);
+app.use("/settings", settingsRoutes);
+app.use("/availability", availabilityRoutes);
+app.use("/training", trainingRoutes);
+app.use("/exercises", exerciceRoutes);
 
 io.on("connection", (socket) => {
   console.log("Cliente conectado:", socket.id);

@@ -14,15 +14,47 @@ router.post("/reset-password-with-code", userController.resetPasswordWithCode);
 router.post("/resend-verification", userController.resendVerificationEmail);
 
 // Protegido (só admins)
-router.get("/all", authMiddleware, authorizeRoles("Admin", "PT"), userController.getAllIncludingInactive);
-router.get("/inactive", authMiddleware, authorizeRoles("Admin"), userController.getAllInactive);
-router.put("/deactivate/:id", authMiddleware, authorizeRoles("Admin"), userController.deactivate);
-router.put("/activate/:id", authMiddleware, authorizeRoles("Admin"), userController.activate);
+router.get(
+  "/all",
+  authMiddleware,
+  authorizeRoles("Admin", "PT"),
+  userController.getAllIncludingInactive,
+);
+router.get(
+  "/inactive",
+  authMiddleware,
+  authorizeRoles("Admin"),
+  userController.getAllInactive,
+);
+router.put(
+  "/deactivate/:id",
+  authMiddleware,
+  authorizeRoles("Admin"),
+  userController.deactivate,
+);
+router.put(
+  "/activate/:id",
+  authMiddleware,
+  authorizeRoles("Admin"),
+  userController.activate,
+);
 
 // Protegido (só autenticados)
-router.get("/", authMiddleware, authorizeRoles("Admin", "PT"), userController.getAll);
-router.get("/my-atheletes/:userId", authMiddleware, authorizeRoles("Admin", "PT"), userController.getMine);
-router.get("/get-staff", authMiddleware, (req, res) => userController.getStaff(req, res));
+router.get(
+  "/",
+  authMiddleware,
+  authorizeRoles("Admin", "PT"),
+  userController.getAll,
+);
+router.get(
+  "/my-atheletes/:userId",
+  authMiddleware,
+  authorizeRoles("Admin", "PT"),
+  userController.getMine,
+);
+router.get("/get-staff", authMiddleware, (req, res) =>
+  userController.getStaff(req, res),
+);
 router.get("/:id", authMiddleware, userController.getById);
 
 // Protegido (qualquer user autenticado pode atualizar o próprio perfil)

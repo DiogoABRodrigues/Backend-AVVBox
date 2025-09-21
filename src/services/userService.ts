@@ -10,8 +10,17 @@ import { exerciseService } from "./exerciseService";
 const saltRounds = 10;
 
 export const userService = {
-async register(data: any) {
-    const { name, email, phoneNumber, password, role, coach, athletes, active } = data;
+  async register(data: any) {
+    const {
+      name,
+      email,
+      phoneNumber,
+      password,
+      role,
+      coach,
+      athletes,
+      active,
+    } = data;
 
     // Verifica se já existe
     const existingUser = await User.findOne({ email });
@@ -39,7 +48,7 @@ async register(data: any) {
 
     await measuresService.createMeasure({
       user: newUser._id,
-      type: 'goal',
+      type: "goal",
       weight: 0,
       height: 0,
       bodyFat: 0,
@@ -74,7 +83,10 @@ async register(data: any) {
     if (!user) throw new Error("Usuário não encontrado");
 
     // Enviar email de verificação
-    await emailService.sendVerificationEmail(email, user.verificationToken as string);
+    await emailService.sendVerificationEmail(
+      email,
+      user.verificationToken as string,
+    );
   },
 
   async requestPasswordReset(email: string) {
@@ -82,7 +94,9 @@ async register(data: any) {
     if (!user) throw new Error("Usuário não encontrado");
 
     // Gera código de redefinição
-    const passwordResetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const passwordResetCode = Math.floor(
+      100000 + Math.random() * 900000,
+    ).toString();
 
     user.passwordResetCode = passwordResetCode;
     await user.save();
@@ -90,7 +104,11 @@ async register(data: any) {
     await emailService.sendPasswordResetEmail(email, passwordResetCode);
   },
 
-  async resetPasswordWithCode(email: string, resetCode: string, newPassword: string) {
+  async resetPasswordWithCode(
+    email: string,
+    resetCode: string,
+    newPassword: string,
+  ) {
     const user = await User.findOne({ email, passwordResetCode: resetCode });
     if (!user) throw new Error("Código de redefinição inválido");
 
@@ -108,10 +126,20 @@ async register(data: any) {
 
     if (!user) throw new Error("Usuário não encontrado");
 
-    const validPassword = await bcrypt.compare(password, user.password as string);
+    const validPassword = await bcrypt.compare(
+      password,
+      user.password as string,
+    );
     if (!validPassword) throw new Error("Senha incorreta");
 
-    return { id: user._id, name: user.name, role: user.role, email: user.email, verified: user.verified, active: user.active};
+    return {
+      id: user._id,
+      name: user.name,
+      role: user.role,
+      email: user.email,
+      verified: user.verified,
+      active: user.active,
+    };
   },
 
   async getAll() {
@@ -120,8 +148,8 @@ async register(data: any) {
 
   async getById(id: string) {
     const user = await User.findById(id)
-      .populate('coach', '-password')
-      .populate('atheletes', '-password')
+      .populate("coach", "-password")
+      .populate("atheletes", "-password")
       .select("-password");
     if (!user) throw new Error("Usuário não encontrado");
     return user;
@@ -136,37 +164,57 @@ async register(data: any) {
   async getMyAthletes(userId: string) {
     const user = await User.findById(userId);
     if (!user) throw new Error("Usuário não encontrado");
-    if (user.role !== 'PT' && user.role !== 'Admin') throw new Error("Apenas PTs têm atletas");
+    if (user.role !== "PT" && user.role !== "Admin")
+      throw new Error("Apenas PTs têm atletas");
 
     //pts tem um parametro athletes que é um array de ids de atletas
-    const athletes = await User.find({ _id: { $in: user.atheletes } }).select("-password");
-    return athletes;  
+    const athletes = await User.find({ _id: { $in: user.atheletes } }).select(
+      "-password",
+    );
+    return athletes;
   },
 
   async deactivate(id: string) {
-    const user = await User.findByIdAndUpdate(id, { active: false }, { new: true }).select("-password");
+    const user = await User.findByIdAndUpdate(
+      id,
+      { active: false },
+      { new: true },
+    ).select("-password");
     if (!user) throw new Error("Usuário não encontrado");
     return user;
   },
 
   async activate(id: string) {
-    const user = await User.findByIdAndUpdate(id, { active: true }, { new: true }).select("-password");
+    const user = await User.findByIdAndUpdate(
+      id,
+      { active: true },
+      { new: true },
+    ).select("-password");
     if (!user) throw new Error("Usuário não encontrado");
     return user;
   },
 
-  async update(id: string, data: { 
-    name?: string;
-    email?: string;
-    phoneNumber?: string;
-    role?: string;
-    coach?: string;
-    atheletes?: string[];
-  }) {
+  async update(
+    id: string,
+    data: {
+      name?: string;
+      email?: string;
+      phoneNumber?: string;
+      role?: string;
+      coach?: string;
+      atheletes?: string[];
+    },
+  ) {
     const { name, email, phoneNumber, role, coach, atheletes } = data;
-    if(phoneNumber) {
-      const existingUser = await User.findOne({ phoneNumber, _id: { $ne: id } });
-      if (existingUser) throw new Error("O número de telemóvel já está a ser usado por outro utilizador");
+    if (phoneNumber) {
+      const existingUser = await User.findOne({
+        phoneNumber,
+        _id: { $ne: id },
+      });
+      if (existingUser)
+        throw new Error(
+          "O número de telemóvel já está a ser usado por outro utilizador",
+        );
     }
     // constrói update dinâmico
     const updateData: Record<string, any> = {};
@@ -177,8 +225,9 @@ async register(data: any) {
     if (coach) updateData.coach = coach;
     if (atheletes) updateData.atheletes = atheletes;
 
-    const user = await User.findByIdAndUpdate(id, updateData, { new: true })
-      .select("-password");
+    const user = await User.findByIdAndUpdate(id, updateData, {
+      new: true,
+    }).select("-password");
 
     if (!user) throw new Error("Usuário não encontrado");
 
@@ -186,6 +235,10 @@ async register(data: any) {
   },
 
   async getStaff() {
-    return User.find({ role: { $in: ['PT', 'Admin'] }, active: true, verified: true }).select("-password");
-  }
+    return User.find({
+      role: { $in: ["PT", "Admin"] },
+      active: true,
+      verified: true,
+    }).select("-password");
+  },
 };

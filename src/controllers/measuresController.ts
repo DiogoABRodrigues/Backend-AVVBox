@@ -17,7 +17,9 @@ export const measuresController = {
       const measures = await measuresService.getAtualByUser(userId);
       res.json(measures);
     } catch (err: any) {
-      res.status(500).json({ message: err.message || "Erro ao buscar medidas" });
+      res
+        .status(500)
+        .json({ message: err.message || "Erro ao buscar medidas" });
     }
   },
 
@@ -27,7 +29,9 @@ export const measuresController = {
       const measures = await measuresService.getAllMeasuresByUser(userId);
       res.json(measures);
     } catch (err: any) {
-      res.status(500).json({ message: err.message || "Erro ao buscar medidas" });
+      res
+        .status(500)
+        .json({ message: err.message || "Erro ao buscar medidas" });
     }
   },
 
@@ -37,7 +41,9 @@ export const measuresController = {
       const measures = await measuresService.getLastByUser(userId);
       res.json(measures);
     } catch (err: any) {
-      res.status(500).json({ message: err.message || "Erro ao buscar medidas" });
+      res
+        .status(500)
+        .json({ message: err.message || "Erro ao buscar medidas" });
     }
   },
 
@@ -47,7 +53,9 @@ export const measuresController = {
       const goalMeasure = await measuresService.getGoalMeasuresByUser(userId);
       res.json(goalMeasure);
     } catch (err: any) {
-      res.status(500).json({ message: err.message || "Erro ao buscar medida de objetivo" });
+      res
+        .status(500)
+        .json({ message: err.message || "Erro ao buscar medida de objetivo" });
     }
   },
 
@@ -60,7 +68,9 @@ export const measuresController = {
       }
       res.json(updated);
     } catch (err: any) {
-      res.status(500).json({ message: err.message || "Erro ao atualizar medida" });
+      res
+        .status(500)
+        .json({ message: err.message || "Erro ao atualizar medida" });
     }
   },
 
@@ -70,12 +80,15 @@ export const measuresController = {
       const { id } = req.params;
       const deleted = await measuresService.deleteMeasure(id);
       if (!deleted) {
-        return res.status(404).json({ message: "Medida não encontrada ou não pode ser deletada" });
+        return res
+          .status(404)
+          .json({ message: "Medida não encontrada ou não pode ser deletada" });
       }
       res.json({ message: "Medida deletada com sucesso" });
     } catch (err: any) {
-      res.status(500).json({ message: err.message || "Erro ao deletar medida" });
+      res
+        .status(500)
+        .json({ message: err.message || "Erro ao deletar medida" });
     }
   },
-
 };

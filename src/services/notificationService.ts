@@ -8,12 +8,16 @@ export const notificationService = {
     senderId: string,
     title: string,
     body: string,
-    target: string[] | "all" | "my"
+    target: string[] | "all" | "my",
   ) {
     const sender = await User.findById(senderId);
     if (!sender) throw new Error("Usuário remetente não encontrado");
 
-    if (Array.isArray(target) && target.length === 1 && (target[0] === "my" || target[0] === "all")) {
+    if (
+      Array.isArray(target) &&
+      target.length === 1 &&
+      (target[0] === "my" || target[0] === "all")
+    ) {
       target = target[0] as "my" | "all";
     }
 
@@ -22,7 +26,7 @@ export const notificationService = {
     if (target === "all") {
       // Apenas utilizadores ativos
       const users = await User.find({ active: true });
-      recipients = users.map(u => u._id.toString());
+      recipients = users.map((u) => u._id.toString());
     } else if (target === "my") {
       recipients = sender.atheletes.map((athlete: any) => athlete.toString());
     } else if (Array.isArray(target)) {
@@ -45,7 +49,9 @@ export const notificationService = {
   },
 
   async getUserNotifications(targetId: string) {
-    return Notification.find({ target: { $in: [targetId] } }).sort({ date: -1 });
+    return Notification.find({ target: { $in: [targetId] } }).sort({
+      date: -1,
+    });
   },
 
   async deleteNotificationForUser(notificationId: string, userId: string) {
@@ -62,11 +68,15 @@ export const notificationService = {
     if (!notification) throw new Error("Notification não encontrada");
 
     const userObjectId = new mongoose.Types.ObjectId(userId);
-    if (!notification.readBy.some((id: any) => id.toString() === userObjectId.toString())) {
+    if (
+      !notification.readBy.some(
+        (id: any) => id.toString() === userObjectId.toString(),
+      )
+    ) {
       notification.readBy.push(userObjectId);
       await notification.save();
     }
 
     return notification;
-  }
+  },
 };

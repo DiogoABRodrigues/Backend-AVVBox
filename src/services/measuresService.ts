@@ -7,22 +7,28 @@ export const measuresService = {
   },
 
   async getAllMeasuresByUser(userId: string) {
-    return await Measures.find({ user: userId, type: 'atual'  }).sort({ date: -1 });
+    return await Measures.find({ user: userId, type: "atual" }).sort({
+      date: -1,
+    });
   },
   //return just the last measure of type 'atual'
   async getAtualByUser(userId: string) {
-    return await Measures.findOne({ user: userId, type: 'atual'  }).sort({ date: -1 });
+    return await Measures.findOne({ user: userId, type: "atual" }).sort({
+      date: -1,
+    });
   },
 
   async getLastByUser(userId: string) {
-    return await Measures.findOne({ user: userId, type: 'atual' })
+    return await Measures.findOne({ user: userId, type: "atual" })
       .sort({ date: -1 }) // ordenar mais recentes primeiro
-      .skip(1)            // saltar o mais recente
+      .skip(1) // saltar o mais recente
       .exec();
   },
 
-  async getGoalMeasuresByUser(userId: string) { 
-    return await Measures.findOne({ user: userId, type: 'goal' }).sort({ date: -1 });
+  async getGoalMeasuresByUser(userId: string) {
+    return await Measures.findOne({ user: userId, type: "goal" }).sort({
+      date: -1,
+    });
   },
 
   async updateMeasure(measureId: string, data: any) {
@@ -37,9 +43,9 @@ export const measuresService = {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    if (measure.type === 'atual' && measure.date >= thirtyDaysAgo) {
+    if (measure.type === "atual" && measure.date >= thirtyDaysAgo) {
       return await Measures.findByIdAndDelete(measureId);
     }
     return null;
-  }
+  },
 };

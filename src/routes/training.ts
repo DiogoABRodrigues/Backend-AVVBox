@@ -7,29 +7,47 @@ const router = Router();
 const trainingController = new TrainingController();
 
 // getByPT (autenticado)
-router.get("/pt/:ptId", authMiddleware, (req, res) => trainingController.getByPT(req, res));
+router.get("/pt/:ptId", authMiddleware, (req, res) =>
+  trainingController.getByPT(req, res),
+);
 
 // Criar treino
-router.post("/", authMiddleware, (req, res) => trainingController.create(req, res));
+router.post("/", authMiddleware, (req, res) =>
+  trainingController.create(req, res),
+);
 
-router.patch("/:id/accept", authMiddleware, (req, res) => trainingController.accept(req, res));
+router.patch("/:id/accept", authMiddleware, (req, res) =>
+  trainingController.accept(req, res),
+);
 
 // Rejeitar treino
-router.patch("/:id/reject", authMiddleware, (req, res) => trainingController.reject(req, res));
+router.patch("/:id/reject", authMiddleware, (req, res) =>
+  trainingController.reject(req, res),
+);
 
 // Cancelar treino
-router.patch("/:id/cancel", authMiddleware, (req, res) => trainingController.cancel(req, res));
+router.patch("/:id/cancel", authMiddleware, (req, res) =>
+  trainingController.cancel(req, res),
+);
 
 // Apagar treino (cancelar)
-router.delete("/:id", authMiddleware, (req, res) => trainingController.delete(req, res));
+router.delete("/:id", authMiddleware, (req, res) =>
+  trainingController.delete(req, res),
+);
 
 ///upcoming/
-router.get("/upcoming/:userId", authMiddleware, (req, res) => trainingController.getUpcoming(req, res));
+router.get("/upcoming/:userId", authMiddleware, (req, res) =>
+  trainingController.getUpcoming(req, res),
+);
 
 // Próximos 15 dias
-router.get("/next15days/:userId", authMiddleware, (req, res) => trainingController.getUpcomingFifteenDays(req, res));
+router.get("/next15days/:userId", authMiddleware, (req, res) =>
+  trainingController.getUpcomingFifteenDays(req, res),
+);
 
 // pending/
-router.get("/pending/:userId", authMiddleware, (req, res) => trainingController.getPending(req, res));
+router.get("/pending/:userId", authMiddleware, (req, res) =>
+  trainingController.getPending(req, res),
+);
 
 export default router;

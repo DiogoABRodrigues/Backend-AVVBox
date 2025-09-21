@@ -20,7 +20,6 @@ export const availabilityService = {
 
   // Atualizar availability existente pelo _id
   async update(id: string, data: any) {
-
     //checkar se os formatos cumprem HH:MM - HH:MM e se o start é antes do end
     const isValidInterval = (interval: { start: string; end: string }) => {
       const timeFormat = /^\d{2}:\d{2}$/;
@@ -32,12 +31,22 @@ export const availabilityService = {
       return start < end;
     };
 
-    const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    const days = [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ];
     for (const day of days) {
       if (data[day] && data[day].working) {
         for (const interval of data[day].intervals) {
           if (!isValidInterval(interval)) {
-            throw new Error(`Invalid time interval on ${day}: ${JSON.stringify(interval)}`);
+            throw new Error(
+              `Invalid time interval on ${day}: ${JSON.stringify(interval)}`,
+            );
           }
         }
       }
@@ -46,9 +55,11 @@ export const availabilityService = {
     //order intervals by start time
     for (const day of days) {
       if (data[day] && data[day].working) {
-        data[day].intervals.sort((a: { start: string }, b: { start: string }) => {
-          return a.start.localeCompare(b.start);
-        });
+        data[day].intervals.sort(
+          (a: { start: string }, b: { start: string }) => {
+            return a.start.localeCompare(b.start);
+          },
+        );
       }
     }
 
@@ -66,7 +77,7 @@ export const availabilityService = {
           maxAthletesPerHour: data.maxAthletesPerHour,
         },
       },
-      { new: true }
+      { new: true },
     );
   },
 

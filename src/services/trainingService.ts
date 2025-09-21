@@ -4,10 +4,12 @@ import { Types } from "mongoose";
 export const trainingService = {
   // Buscar treinos de um PT (sem rejeitados)
   async getByPT(ptId: string) {
-    return await Training.find({ 
-      PT: new Types.ObjectId(ptId), 
-      overallStatus: { $ne: "rejected" } 
-    }).populate("PT", "name email").populate("athlete", "name email");
+    return await Training.find({
+      PT: new Types.ObjectId(ptId),
+      overallStatus: { $ne: "rejected" },
+    })
+      .populate("PT", "name email")
+      .populate("athlete", "name email");
   },
 
   async create(data: {
@@ -51,7 +53,10 @@ export const trainingService = {
       throw new Error("User not part of this training");
     }
 
-    if (training.ptStatus === "accepted" && training.athleteStatus === "accepted") {
+    if (
+      training.ptStatus === "accepted" &&
+      training.athleteStatus === "accepted"
+    ) {
       training.overallStatus = "confirmed";
     }
 
@@ -95,7 +100,6 @@ export const trainingService = {
 
     return await training.save();
   },
-
 
   async delete(trainingId: string) {
     return await Training.findByIdAndDelete(trainingId);
@@ -154,5 +158,5 @@ export const trainingService = {
       .sort({ date: 1, hour: 1 })
       .populate("PT", "name email")
       .populate("athlete", "name email");
-  }
+  },
 };

@@ -9,7 +9,12 @@ export const userController = {
   async register(req: Request, res: Response) {
     try {
       const user = await userService.register(req.body);
-      res.status(201).json({ message: "Usuário criado com sucesso, verifica o email!", user });
+      res
+        .status(201)
+        .json({
+          message: "Usuário criado com sucesso, verifica o email!",
+          user,
+        });
     } catch (err: any) {
       res.status(400).json({ message: err.message || "Erro ao criar usuário" });
     }
@@ -76,7 +81,7 @@ export const userController = {
 
   async resendVerificationEmail(req: Request, res: Response) {
     try {
-      console.log ("Resend verification email request body:", req.body);
+      console.log("Resend verification email request body:", req.body);
       const { email } = req.body;
       if (!email || typeof email !== "string") {
         return res.status(400).json({ message: "Email inválido" });
@@ -84,7 +89,11 @@ export const userController = {
       await userService.resendVerificationEmail(email);
       res.json({ message: "Email de verificação reenviado com sucesso" });
     } catch (err: any) {
-      res.status(400).json({ message: err.message || "Erro ao reenviar email de verificação" });
+      res
+        .status(400)
+        .json({
+          message: err.message || "Erro ao reenviar email de verificação",
+        });
     }
   },
 
@@ -95,9 +104,15 @@ export const userController = {
         return res.status(400).json({ message: "Email inválido" });
       }
       await userService.requestPasswordReset(email);
-      res.json({ message: "Email de redefinição de senha enviado com sucesso" });
+      res.json({
+        message: "Email de redefinição de senha enviado com sucesso",
+      });
     } catch (err: any) {
-      res.status(400).json({ message: err.message || "Erro ao solicitar redefinição de senha" });
+      res
+        .status(400)
+        .json({
+          message: err.message || "Erro ao solicitar redefinição de senha",
+        });
     }
   },
 
@@ -112,7 +127,9 @@ export const userController = {
         return res.status(400).json({ message: "Email inválido" });
       }
       if (!code || code !== user.passwordResetCode) {
-        return res.status(400).json({ message: "Código de redefinição inválido" });
+        return res
+          .status(400)
+          .json({ message: "Código de redefinição inválido" });
       }
       if (!newPassword || typeof newPassword !== "string") {
         return res.status(400).json({ message: "Nova senha inválida" });
@@ -120,43 +137,61 @@ export const userController = {
       await userService.resetPasswordWithCode(email, code, newPassword);
       res.json({ message: "Senha redefinida com sucesso" });
     } catch (err: any) {
-      res.status(400).json({ message: err.message || "Erro ao redefinir senha", error: err });
+      res
+        .status(400)
+        .json({
+          message: err.message || "Erro ao redefinir senha",
+          error: err,
+        });
     }
   },
 
   async login(req: Request, res: Response) {
-  try {
-    const { login, password } = req.body;
+    try {
+      const { login, password } = req.body;
 
-    const user = await userService.login(login, password);
+      const user = await userService.login(login, password);
 
-    // Aqui geramos o JWT com id e role
-    const token = jwt.sign(
-      { id: user.id.toString(), role: user.role }, 
-      SECRET_KEY,
-      { expiresIn: "1d" } // expira em 1 dia
-    );
+      // Aqui geramos o JWT com id e role
+      const token = jwt.sign(
+        { id: user.id.toString(), role: user.role },
+        SECRET_KEY,
+        { expiresIn: "1d" }, // expira em 1 dia
+      );
 
-    // Retorna user + token
-    res.json({ 
-      message: "Login bem-sucedido",
-      user: { id: user.id, name: user.name, role: user.role, verified: user.verified, active: user.active },
-      token
-    });
-  } catch (err: any) {
-    res.status(400).json({ message: err.message || "Erro ao fazer login", error: err });
-  }
-},
+      // Retorna user + token
+      res.json({
+        message: "Login bem-sucedido",
+        user: {
+          id: user.id,
+          name: user.name,
+          role: user.role,
+          verified: user.verified,
+          active: user.active,
+        },
+        token,
+      });
+    } catch (err: any) {
+      res
+        .status(400)
+        .json({ message: err.message || "Erro ao fazer login", error: err });
+    }
+  },
 
   async getAll(req: Request, res: Response) {
     try {
       let users = await userService.getAll();
 
       //only the active ones and verified
-      users = users.filter(user => user.active && user.verified);
+      users = users.filter((user) => user.active && user.verified);
       res.json(users);
     } catch (err: any) {
-      res.status(500).json({ message: err.message || "Erro ao listar usuários", error: err });
+      res
+        .status(500)
+        .json({
+          message: err.message || "Erro ao listar usuários",
+          error: err,
+        });
     }
   },
 
@@ -164,10 +199,15 @@ export const userController = {
     try {
       //remove the unverified ones
       let users = await userService.getAll();
-      users = users.filter(user => user.verified);
+      users = users.filter((user) => user.verified);
       res.json(users);
     } catch (err: any) {
-      res.status(500).json({ message: err.message || "Erro ao listar usuários", error: err });
+      res
+        .status(500)
+        .json({
+          message: err.message || "Erro ao listar usuários",
+          error: err,
+        });
     }
   },
 
@@ -178,7 +218,9 @@ export const userController = {
       if (!user.verified) throw new Error("Usuário não verificado");
       res.json(user);
     } catch (err: any) {
-      res.status(404).json({ message: err.message || "Usuário não encontrado", error: err });
+      res
+        .status(404)
+        .json({ message: err.message || "Usuário não encontrado", error: err });
     }
   },
 
@@ -186,10 +228,15 @@ export const userController = {
     try {
       let users = await userService.getAll();
       //only the inactive ones
-      users = users.filter(user => !user.active && user.verified);
+      users = users.filter((user) => !user.active && user.verified);
       res.json(users);
     } catch (err: any) {
-      res.status(500).json({ message: err.message || "Erro ao listar usuários inativos", error: err });
+      res
+        .status(500)
+        .json({
+          message: err.message || "Erro ao listar usuários inativos",
+          error: err,
+        });
     }
   },
 
@@ -197,10 +244,12 @@ export const userController = {
     try {
       const userId = req.params.userId;
       let athletes = await userService.getMyAthletes(userId);
-      athletes = athletes.filter(user => user.active && user.verified);
+      athletes = athletes.filter((user) => user.active && user.verified);
       res.json(athletes);
     } catch (err: any) {
-      res.status(500).json({ message: err.message || "Erro ao listar atletas", error: err });
+      res
+        .status(500)
+        .json({ message: err.message || "Erro ao listar atletas", error: err });
     }
   },
 
@@ -209,7 +258,12 @@ export const userController = {
       const user = await userService.deactivate(req.params.id);
       res.json({ message: "Usuário desativado com sucesso", user });
     } catch (err: any) {
-      res.status(400).json({ message: err.message || "Erro ao desativar usuário", error: err });
+      res
+        .status(400)
+        .json({
+          message: err.message || "Erro ao desativar usuário",
+          error: err,
+        });
     }
   },
 
@@ -218,7 +272,9 @@ export const userController = {
       const user = await userService.activate(req.params.id);
       res.json({ message: "Usuário ativado com sucesso", user });
     } catch (err: any) {
-      res.status(400).json({ message: err.message || "Erro ao ativar usuário", error: err });
+      res
+        .status(400)
+        .json({ message: err.message || "Erro ao ativar usuário", error: err });
     }
   },
 
@@ -227,7 +283,12 @@ export const userController = {
       const user = await userService.update(req.params.id, req.body);
       res.json(user);
     } catch (err: any) {
-      res.status(400).json({ message: err.message || "Erro ao atualizar informações", error: err });
+      res
+        .status(400)
+        .json({
+          message: err.message || "Erro ao atualizar informações",
+          error: err,
+        });
     }
   },
 
@@ -236,7 +297,12 @@ export const userController = {
       const users = await userService.getStaff();
       res.json(users);
     } catch (err: any) {
-      res.status(500).json({ message: err.message || "Erro ao listar usuários", error: err });
+      res
+        .status(500)
+        .json({
+          message: err.message || "Erro ao listar usuários",
+          error: err,
+        });
     }
   },
 };
