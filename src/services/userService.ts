@@ -164,7 +164,10 @@ async register(data: any) {
     atheletes?: string[];
   }) {
     const { name, email, phoneNumber, role, coach, atheletes } = data;
-
+    if(phoneNumber) {
+      const existingUser = await User.findOne({ phoneNumber, _id: { $ne: id } });
+      if (existingUser) throw new Error("O número de telemóvel já está a ser usado por outro utilizador");
+    }
     // constrói update dinâmico
     const updateData: Record<string, any> = {};
     if (name) updateData.name = name;
