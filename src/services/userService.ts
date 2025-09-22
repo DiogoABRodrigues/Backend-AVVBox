@@ -124,13 +124,14 @@ export const userService = {
   async login(login: string, password: string) {
     const user = await User.findOne({ email: login });
 
-    if (!user) throw new Error("Usuário não encontrado");
+    if (!user) throw new Error("Email introduzido não existe cadastrado no sistema, tente novamente.");
 
+    if (!user.active) throw new Error("Conta desativada. Contacte o suporte.");
     const validPassword = await bcrypt.compare(
       password,
       user.password as string,
     );
-    if (!validPassword) throw new Error("Senha incorreta");
+    if (!validPassword) throw new Error("Senha incorreta, tente novamente.");
     let coach;
     if (user.coach && user.coach.length > 0) {
       coach = [await User.findById(user.coach[0]).select("-password")];
