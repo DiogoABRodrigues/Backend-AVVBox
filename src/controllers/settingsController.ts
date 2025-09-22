@@ -4,13 +4,26 @@ import { settingsService } from "../services/settingsService";
 export class SettingsController {
   async create(req: Request, res: Response) {
     try {
-      const { userId, fifteenMin, thirtyMin, sixtyMin, onetwentyMin } =
-        req.body;
+      const {
+        userId,
+        fifteenMin,
+        thirtyMin,
+        sixtyMin,
+        onetwentyMin,
+        trainingPending,
+        trainingApproved,
+        trainingRejected,
+        trainingCanceled,
+      } = req.body;
       const settings = await settingsService.create(userId, {
         fifteenMin,
         thirtyMin,
         sixtyMin,
         onetwentyMin,
+        trainingPending,
+        trainingApproved,
+        trainingRejected,
+        trainingCanceled,
       });
       res.status(201).json(settings);
     } catch (err: any) {

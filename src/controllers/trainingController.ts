@@ -65,7 +65,8 @@ export class TrainingController {
   async delete(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      await trainingService.delete(id);
+      const { userId } = req.body; // quem está a cancelar
+      await trainingService.delete(id, userId);
       res.status(204).send();
     } catch (err: any) {
       res.status(500).json({ error: err.message });

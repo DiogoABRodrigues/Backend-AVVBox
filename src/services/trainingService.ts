@@ -1,5 +1,11 @@
 import { Training } from "../models/Training";
 import { Types } from "mongoose";
+import { settingsService } from "./settingsService";
+import {
+  notificationController,
+  socketFunction,
+} from "../controllers/notificationController";
+import { notificationService } from "./notificationService";
 
 export const trainingService = {
   // Buscar treinos de um PT (sem rejeitados)
@@ -36,6 +42,26 @@ export const trainingService = {
       overallStatus: "pending",
     });
 
+    let notify;
+    if (data.proposedBy === "PT") {
+      notify = data.athlete;
+    } else {
+      notify = data.PT;
+    }
+
+    const settings = await settingsService.getByUser(notify);
+    if (settings.trainingPending) {
+      const res = await notificationService.createNotification(
+        data.proposedBy === "PT" ? data.PT : data.athlete,
+        "Novo pedido de treino",
+        `Tens um novo pedido de treino em ${formatDate(data.date.toString(), data.hour)}.`,
+        [notify],
+      );
+
+      const targetIds = (res.target || []).map((id: any) => id.toString());
+      socketFunction(targetIds, res);
+    }
+
     return await training.save();
   },
 
@@ -44,11 +70,13 @@ export const trainingService = {
     if (!training) throw new Error("Training not found");
 
     const userObjectId = new Types.ObjectId(userId);
-
+    let notify;
     if ((training.PT as Types.ObjectId).equals(userObjectId)) {
       training.ptStatus = "accepted";
+      notify = training.athlete;
     } else if ((training.athlete as Types.ObjectId).equals(userObjectId)) {
       training.athleteStatus = "accepted";
+      notify = training.PT;
     } else {
       throw new Error("User not part of this training");
     }
@@ -58,6 +86,18 @@ export const trainingService = {
       training.athleteStatus === "accepted"
     ) {
       training.overallStatus = "confirmed";
+      const settings = await settingsService.getByUser(notify.toString());
+      if (settings.trainingApproved) {
+        const res = await notificationService.createNotification(
+          userId,
+          "Treino confirmado",
+          `O teu treino em ${formatDate(training.date.toString(), training.hour)} foi confirmado.`,
+          [notify.toString()],
+        );
+
+        const targetIds = (res.target || []).map((id: any) => id.toString());
+        socketFunction(targetIds, res);
+      }
     }
 
     return await training.save();
@@ -68,16 +108,30 @@ export const trainingService = {
     if (!training) throw new Error("Training not found");
 
     const userObjectId = new Types.ObjectId(userId);
-
+    let notify;
     if ((training.PT as Types.ObjectId).equals(userObjectId)) {
       training.ptStatus = "rejected";
+      notify = training.athlete;
     } else if ((training.athlete as Types.ObjectId).equals(userObjectId)) {
       training.athleteStatus = "rejected";
+      notify = training.PT;
     } else {
       throw new Error("User not part of this training");
     }
 
     training.overallStatus = "rejected";
+    const settings = await settingsService.getByUser(notify.toString());
+    if (settings.trainingRejected) {
+      const res = await notificationService.createNotification(
+        userId,
+        "Treino rejeitado",
+        `O teu treino em ${formatDate(training.date.toString(), training.hour)} foi rejeitado.`,
+        [notify.toString()],
+      );
+
+      const targetIds = (res.target || []).map((id: any) => id.toString());
+      socketFunction(targetIds, res);
+    }
 
     return await training.save();
   },
@@ -101,8 +155,37 @@ export const trainingService = {
     return await training.save();
   },
 
-  async delete(trainingId: string) {
-    return await Training.findByIdAndDelete(trainingId);
+  async delete(trainingId: string, userId: string) {
+    const training = await Training.findById(trainingId);
+    if (!training) throw new Error("Training not found");
+
+    const userObjectId = new Types.ObjectId(userId);
+    let notify;
+    if ((training.PT as Types.ObjectId).equals(userObjectId)) {
+      notify = training.athlete;
+    } else if ((training.athlete as Types.ObjectId).equals(userObjectId)) {
+      notify = training.PT;
+    } else {
+      throw new Error("User not part of this training");
+    }
+
+    const settings = await settingsService.getByUser(notify.toString());
+    if (settings.trainingCanceled) {
+      const res = await notificationService.createNotification(
+        userId,
+        "Treino cancelado",
+        `O teu treino em ${formatDate(training.date.toString(), training.hour)} foi cancelado.`,
+        [notify.toString()],
+      );
+
+      const targetIds = (res.target || []).map((id: any) => id.toString());
+      socketFunction(targetIds, res);
+    }
+
+    // apagar mesmo
+    Training.deleteOne({ _id: trainingId }).exec();
+
+    return await training.save();
   },
 
   // Próximos 7 dias
@@ -159,4 +242,21 @@ export const trainingService = {
       .populate("PT", "name email")
       .populate("athlete", "name email");
   },
+};
+
+const formatDate = (dateString: string, time: string) => {
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const weekdays = [
+    "Domingo",
+    "Segunda-feira",
+    "Terça-feira",
+    "Quarta-feira",
+    "Quinta-feira",
+    "Sexta-feira",
+    "Sábado",
+  ];
+  const weekday = weekdays[date.getDay()];
+  return `${day}/${month}, ${weekday} às ${time}`;
 };

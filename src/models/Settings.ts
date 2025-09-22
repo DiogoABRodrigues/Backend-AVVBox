@@ -6,6 +6,10 @@ const SettingsSchema = new Schema({
   thirtyMin: { type: Boolean, default: false },
   sixtyMin: { type: Boolean, default: false },
   onetwentyMin: { type: Boolean, default: false },
+  trainingPending: { type: Boolean, default: true },
+  trainingApproved: { type: Boolean, default: true },
+  trainingRejected: { type: Boolean, default: true },
+  trainingCanceled: { type: Boolean, default: true },
 });
 
 export const Settings = model("Settings", SettingsSchema);

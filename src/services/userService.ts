@@ -132,11 +132,11 @@ export const userService = {
     );
     if (!validPassword) throw new Error("Senha incorreta");
     let coach;
-    if(user.coach && user.coach.length > 0) {
+    if (user.coach && user.coach.length > 0) {
       coach = [await User.findById(user.coach[0]).select("-password")];
     }
 
-    if(!coach || coach.length === 0) {
+    if (!coach || coach.length === 0) {
       coach = null;
     }
 
@@ -144,7 +144,7 @@ export const userService = {
       _id: user._id,
       name: user.name,
       email: user.email,
-      phoneNumber: user.phoneNumber,      
+      phoneNumber: user.phoneNumber,
       coach: coach,
       role: user.role,
       atheletes: user.atheletes,

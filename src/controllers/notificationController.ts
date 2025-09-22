@@ -9,12 +9,9 @@ export const notificationController = {
       const { title, body, target } = req.body;
 
       if (!title || !target) {
-        return res
-          .status(400)
-          .json({
-            message:
-              "Campos obrigatórios (título e remetente) não preenchidos.",
-          });
+        return res.status(400).json({
+          message: "Campos obrigatórios (título e remetente) não preenchidos.",
+        });
       }
       // Cria notificações usando o service
       const notification = await notificationService.createNotification(
@@ -27,26 +24,14 @@ export const notificationController = {
         id.toString(),
       );
 
-      targetIds.forEach((tId: string) => {
-        const userNotifications = notification.target?.toString().includes(tId)
-          ? [notification]
-          : [];
-
-        io.to(tId).emit("new-notification", userNotifications);
-        console.log(
-          `Enviando notificação para user ${tId}:`,
-          userNotifications,
-        );
-      });
+      socketFunction(targetIds, notification);
 
       res.status(201).json({ message: "Notificações criadas", notification });
     } catch (err: any) {
-      res
-        .status(500)
-        .json({
-          message: err.message || "Erro ao criar notificações",
-          error: err,
-        });
+      res.status(500).json({
+        message: err.message || "Erro ao criar notificações",
+        error: err,
+      });
     }
   },
 
@@ -55,12 +40,10 @@ export const notificationController = {
       const notifications = await notificationService.getAllNotifications();
       res.json(notifications);
     } catch (err: any) {
-      res
-        .status(500)
-        .json({
-          message: err.message || "Erro ao listar notificações",
-          error: err,
-        });
+      res.status(500).json({
+        message: err.message || "Erro ao listar notificações",
+        error: err,
+      });
     }
   },
 
@@ -71,12 +54,10 @@ export const notificationController = {
         await notificationService.getUserNotifications(targetId);
       res.json(notifications);
     } catch (err: any) {
-      res
-        .status(500)
-        .json({
-          message: err.message || "Erro ao listar notificações do user",
-          error: err,
-        });
+      res.status(500).json({
+        message: err.message || "Erro ao listar notificações do user",
+        error: err,
+      });
     }
   },
 
@@ -89,12 +70,10 @@ export const notificationController = {
       );
       res.json({ message: "Notificação removida do usuário", notification });
     } catch (err: any) {
-      res
-        .status(500)
-        .json({
-          message: err.message || "Erro ao atualizar notificação",
-          error: err,
-        });
+      res.status(500).json({
+        message: err.message || "Erro ao atualizar notificação",
+        error: err,
+      });
     }
   },
 
@@ -107,12 +86,21 @@ export const notificationController = {
       );
       res.json({ message: "Notificação marcada como lida", notification });
     } catch (err: any) {
-      res
-        .status(500)
-        .json({
-          message: err.message || "Erro ao marcar notificação como lida",
-          error: err,
-        });
+      res.status(500).json({
+        message: err.message || "Erro ao marcar notificação como lida",
+        error: err,
+      });
     }
   },
+};
+
+export const socketFunction = (targetIds: string[], notification: any) => {
+  targetIds.forEach((tId: string) => {
+    const userNotifications = notification.target?.toString().includes(tId)
+      ? [notification]
+      : [];
+
+    io.to(tId).emit("new-notification", userNotifications);
+    console.log(`Enviando notificação para user ${tId}:`, userNotifications);
+  });
 };
