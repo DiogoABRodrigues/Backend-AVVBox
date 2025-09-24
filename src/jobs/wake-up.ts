@@ -1,8 +1,9 @@
 import cron from "node-cron";
 import fetch from "node-fetch";
+import { API_BASE_URL } from "../../config";
 
 // URL do teu backend
-const BACKEND_URL = process.env.BACKEND_URL || "https://backend-avvbox.onrender.com";
+const BACKEND_URL = API_BASE_URL;
 
 // Agendar ping a cada 10 minutos
 cron.schedule("*/10 * * * *", async () => {
