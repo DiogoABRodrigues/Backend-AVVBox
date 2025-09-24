@@ -5,6 +5,11 @@ import { authorizeRoles } from "../middlewares/authorizeRoles";
 
 const router = Router();
 
+// Endpoint Wake-Up (Render free instance)
+router.get("/wake-up", (req, res) => {
+  res.send("Backend acordado!");
+});
+
 // Público
 router.post("/register", userController.register);
 router.post("/login", userController.login);

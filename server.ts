@@ -13,6 +13,7 @@ import availabilityRoutes from "./src/routes/availability";
 import trainingRoutes from "./src/routes/training";
 import exerciceRoutes from "./src/routes/exercice";
 import "./src/jobs/dailyCleanup";
+import "./src/jobs/wake-up";
 
 import dotenv from "dotenv";
 
