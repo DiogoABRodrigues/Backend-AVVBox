@@ -60,4 +60,9 @@ router.get("/:id", authMiddleware, userController.getById);
 // Protegido (qualquer user autenticado pode atualizar o próprio perfil)
 router.put("/update/:id", authMiddleware, userController.update);
 
+router.post(
+  "/save-expo-token/:userId",
+  authMiddleware, userController.saveExpoPushToken,
+);
+
 export default router;

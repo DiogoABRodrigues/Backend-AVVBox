@@ -25,6 +25,8 @@ const UserSchema = new Schema({
   verificationToken: { type: String, default: null },
 
   passwordResetCode: { type: String, default: null },
+
+  expoPushToken: { type: String, default: null },
 });
 
 export const User = model("User", UserSchema);

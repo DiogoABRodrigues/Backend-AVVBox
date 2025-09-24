@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { notificationService } from "../services/notificationService";
 import { io } from "../../server";
+import { sendPushNotification } from "../utils/notifications";
+import { userService } from "../services/userService";
 
 export const notificationController = {
   async create(req: Request, res: Response) {
@@ -25,6 +27,14 @@ export const notificationController = {
       );
 
       socketFunction(targetIds, notification);
+
+    const user = await userService.getById(userId);
+
+    if (user && typeof user.expoPushToken === "string") {
+      await sendPushNotification(user.expoPushToken, title, body);
+    } else {
+      console.error("Invalid expoPushToken for user:", user);
+    }
 
       res.status(201).json({ message: "Notificações criadas", notification });
     } catch (err: any) {
