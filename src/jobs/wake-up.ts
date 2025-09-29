@@ -14,13 +14,3 @@ cron.schedule("*/10 * * * *", async () => {
     console.log("Erro ao enviar wake-up ping:", err);
   }
 });
-
-// Agendar ping a cada 10 minutos
-cron.schedule("*/1 * * * *", async () => {
-  try {
-    const res = await fetch(`${BACKEND_URL}/users/wake-up`);
-    console.log(`Wake-up ping enviado: ${res.status}`);
-  } catch (err) {
-    console.log("Erro ao enviar wake-up ping:", err);
-  }
-});
