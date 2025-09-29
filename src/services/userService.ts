@@ -259,6 +259,7 @@ export const userService = {
   },
 
   async saveExpoPushToken(userId: string, expoPushToken: string) {
+    console.log("Saving Expo Push Token:", expoPushToken);
     const user = await User.findByIdAndUpdate(
       userId,
       { expoPushToken },
