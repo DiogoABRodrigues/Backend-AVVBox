@@ -125,7 +125,10 @@ export const userService = {
   async login(login: string, password: string) {
     const user = await User.findOne({ email: login });
 
-    if (!user) throw new Error("Email introduzido não existe cadastrado no sistema, tente novamente.");
+    if (!user)
+      throw new Error(
+        "Email introduzido não existe cadastrado no sistema, tente novamente.",
+      );
 
     if (!user.active) throw new Error("Conta desativada. Contacte o suporte.");
     const validPassword = await bcrypt.compare(

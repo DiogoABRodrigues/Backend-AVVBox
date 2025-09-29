@@ -2,6 +2,7 @@ import { Notification } from "../models/Notifications";
 import { User } from "../models/User";
 import mongoose from "mongoose";
 import { userService } from "./userService";
+import fetch from "node-fetch";
 
 export const notificationService = {
   async createNotification(
@@ -41,6 +42,21 @@ export const notificationService = {
       target: recipients,
     });
 
+    for (const recipient of recipients) {
+      const user = await User.findById(recipient);
+      if (user && typeof user.expoPushToken === "string") {
+        try {
+          await notificationService.sendExpoPushNotification(
+            user.expoPushToken,
+            title,
+            body,
+          );
+        } catch (err) {
+          console.error("Erro ao enviar push:", err);
+        }
+      }
+    }
+
     return notification;
   },
 
@@ -78,5 +94,29 @@ export const notificationService = {
     }
 
     return notification;
+  },
+
+  async sendExpoPushNotification(
+    expoPushToken: string,
+    title: string,
+    body: string,
+  ) {
+    const message = {
+      to: expoPushToken,
+      sound: "default",
+      title,
+      body,
+      data: { withSome: "data" },
+    };
+
+    await fetch("https://exp.host/--/api/v2/push/send", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Accept-encoding": "gzip, deflate",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(message),
+    });
   },
 };

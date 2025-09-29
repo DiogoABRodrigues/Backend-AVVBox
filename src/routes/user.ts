@@ -67,7 +67,8 @@ router.put("/update/:id", authMiddleware, userController.update);
 
 router.post(
   "/save-expo-token/:userId",
-  authMiddleware, userController.saveExpoPushToken,
+  authMiddleware,
+  userController.saveExpoPushToken,
 );
 
 export default router;
