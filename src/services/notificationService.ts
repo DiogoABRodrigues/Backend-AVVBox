@@ -3,6 +3,7 @@ import { User } from "../models/User";
 import mongoose from "mongoose";
 import { userService } from "./userService";
 import fetch from "node-fetch";
+import axios from "axios";
 
 export const notificationService = {
   async createNotification(
@@ -44,13 +45,15 @@ export const notificationService = {
 
     for (const recipient of recipients) {
       const user = await User.findById(recipient);
-      if (user && typeof user.expoPushToken === "string") {
+      if (user) {
         try {
-          await notificationService.sendExpoPushNotification(
-            user.expoPushToken,
-            title,
-            body,
-          );
+          axios.post(`https://app.nativenotify.com/api/indie/notification`, {
+              subID: recipient,
+              appId: 32295,
+              appToken: 'wyhRSJsJFB6gxzAT0mmfaF',
+              title: title,
+              message: body
+        });
         } catch (err) {
           console.error("Erro ao enviar push:", err);
         }

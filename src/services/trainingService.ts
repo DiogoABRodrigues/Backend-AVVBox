@@ -43,10 +43,13 @@ export const trainingService = {
     });
 
     let notify;
+    let deletedBy;
     if (data.proposedBy === "PT") {
       notify = data.athlete;
+      deletedBy = data.PT;
     } else {
       notify = data.PT;
+      deletedBy = data.athlete;
     }
 
     const settings = await settingsService.getByUser(notify);
@@ -54,7 +57,7 @@ export const trainingService = {
       const res = await notificationService.createNotification(
         data.proposedBy === "PT" ? data.PT : data.athlete,
         "Novo pedido de treino",
-        `Tens um novo pedido de treino em ${formatDate(data.date.toString(), data.hour)}.`,
+        `Tens um novo pedido de treino em ${formatDate(data.date.toString(), data.hour)}. Proposto por: ${deletedBy}.`,
         [notify],
       );
 
@@ -71,12 +74,15 @@ export const trainingService = {
 
     const userObjectId = new Types.ObjectId(userId);
     let notify;
+    let deletedBy;
     if ((training.PT as Types.ObjectId).equals(userObjectId)) {
       training.ptStatus = "accepted";
       notify = training.athlete;
+      deletedBy = training.PT;
     } else if ((training.athlete as Types.ObjectId).equals(userObjectId)) {
       training.athleteStatus = "accepted";
       notify = training.PT;
+      deletedBy = training.athlete;
     } else {
       throw new Error("User not part of this training");
     }
@@ -91,7 +97,7 @@ export const trainingService = {
         const res = await notificationService.createNotification(
           userId,
           "Treino confirmado",
-          `O teu treino em ${formatDate(training.date.toString(), training.hour)} foi confirmado.`,
+          `O teu treino em ${formatDate(training.date.toString(), training.hour)} foi confirmado por: ${deletedBy}.`,
           [notify.toString()],
         );
 
@@ -109,12 +115,15 @@ export const trainingService = {
 
     const userObjectId = new Types.ObjectId(userId);
     let notify;
+    let deletedBy;
     if ((training.PT as Types.ObjectId).equals(userObjectId)) {
       training.ptStatus = "rejected";
       notify = training.athlete;
+      deletedBy = training.PT;
     } else if ((training.athlete as Types.ObjectId).equals(userObjectId)) {
       training.athleteStatus = "rejected";
       notify = training.PT;
+      deletedBy = training.athlete;
     } else {
       throw new Error("User not part of this training");
     }
@@ -125,7 +134,7 @@ export const trainingService = {
       const res = await notificationService.createNotification(
         userId,
         "Treino rejeitado",
-        `O teu treino em ${formatDate(training.date.toString(), training.hour)} foi rejeitado.`,
+        `O teu treino em ${formatDate(training.date.toString(), training.hour)} foi rejeitado por: ${deletedBy}.`,
         [notify.toString()],
       );
 
@@ -161,25 +170,31 @@ export const trainingService = {
 
     const userObjectId = new Types.ObjectId(userId);
     let notify;
+    let deletedBy;
     if ((training.PT as Types.ObjectId).equals(userObjectId)) {
       notify = training.athlete;
+      deletedBy = training.PT;
     } else if ((training.athlete as Types.ObjectId).equals(userObjectId)) {
       notify = training.PT;
+      deletedBy = training.athlete;
     } else {
       throw new Error("User not part of this training");
     }
+
+    if( training.overallStatus == 'confirmed' ){
 
     const settings = await settingsService.getByUser(notify.toString());
     if (settings.trainingCanceled) {
       const res = await notificationService.createNotification(
         userId,
         "Treino cancelado",
-        `O teu treino em ${formatDate(training.date.toString(), training.hour)} foi cancelado.`,
+        `O teu treino em ${formatDate(training.date.toString(), training.hour)} foi cancelado por: ${deletedBy}.`,
         [notify.toString()],
       );
 
       const targetIds = (res.target || []).map((id: any) => id.toString());
       socketFunction(targetIds, res);
+      }
     }
 
     // apagar mesmo
