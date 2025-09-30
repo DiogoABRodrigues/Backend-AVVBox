@@ -47,12 +47,18 @@ export const notificationService = {
       const user = await User.findById(recipient);
       if (user) {
         try {
-          axios.post(`https://app.nativenotify.com/api/indie/notification`, {
+        await fetch(`https://app.nativenotify.com/api/indie/notification`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
               subID: recipient,
               appId: 32295,
               appToken: 'wyhRSJsJFB6gxzAT0mmfaF',
               title: title,
-              message: body
+              message: body,
+            }),
         });
         } catch (err) {
           console.error("Erro ao enviar push:", err);
