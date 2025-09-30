@@ -50,4 +50,8 @@ router.get("/pending/:userId", authMiddleware, (req, res) =>
   trainingController.getPending(req, res),
 );
 
+router.put("/:id", authMiddleware, (req, res) =>
+  trainingController.update(req, res),
+);
+
 export default router;

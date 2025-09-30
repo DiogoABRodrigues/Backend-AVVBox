@@ -47,7 +47,7 @@ export const notificationService = {
       const user = await User.findById(recipient);
       if (user) {
         try {
-        await fetch(`https://app.nativenotify.com/api/indie/notification`, {
+          await fetch(`https://app.nativenotify.com/api/indie/notification`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -55,11 +55,11 @@ export const notificationService = {
             body: JSON.stringify({
               subID: recipient,
               appId: 32295,
-              appToken: 'wyhRSJsJFB6gxzAT0mmfaF',
+              appToken: "wyhRSJsJFB6gxzAT0mmfaF",
               title: title,
               message: body,
             }),
-        });
+          });
         } catch (err) {
           console.error("Erro ao enviar push:", err);
         }

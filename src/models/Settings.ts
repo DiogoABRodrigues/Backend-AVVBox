@@ -10,6 +10,7 @@ const SettingsSchema = new Schema({
   trainingApproved: { type: Boolean, default: true },
   trainingRejected: { type: Boolean, default: true },
   trainingCanceled: { type: Boolean, default: true },
+  trainingUpdated: { type: Boolean, default: false },
 });
 
 export const Settings = model("Settings", SettingsSchema);

@@ -25,6 +25,7 @@ export const trainingService = {
     PT: string;
     athlete: string;
     proposedBy: "PT" | "Athlete" | "Admin";
+    details?: string;
   }) {
     if (data.proposedBy === "Admin") {
       data.proposedBy = "PT"; // Admin cria o treino em nome do PT
@@ -40,6 +41,7 @@ export const trainingService = {
       ptStatus: data.proposedBy === "PT" ? "accepted" : "proposed",
       athleteStatus: data.proposedBy === "Athlete" ? "accepted" : "proposed",
       overallStatus: "pending",
+      details: data.details || "",
     });
 
     let notify;
@@ -181,19 +183,18 @@ export const trainingService = {
       throw new Error("User not part of this training");
     }
 
-    if( training.overallStatus == 'confirmed' ){
+    if (training.overallStatus == "confirmed") {
+      const settings = await settingsService.getByUser(notify.toString());
+      if (settings.trainingCanceled) {
+        const res = await notificationService.createNotification(
+          userId,
+          "Treino cancelado",
+          `O teu treino em ${formatDate(training.date.toString(), training.hour)} foi cancelado por: ${deletedBy}.`,
+          [notify.toString()],
+        );
 
-    const settings = await settingsService.getByUser(notify.toString());
-    if (settings.trainingCanceled) {
-      const res = await notificationService.createNotification(
-        userId,
-        "Treino cancelado",
-        `O teu treino em ${formatDate(training.date.toString(), training.hour)} foi cancelado por: ${deletedBy}.`,
-        [notify.toString()],
-      );
-
-      const targetIds = (res.target || []).map((id: any) => id.toString());
-      socketFunction(targetIds, res);
+        const targetIds = (res.target || []).map((id: any) => id.toString());
+        socketFunction(targetIds, res);
       }
     }
 
@@ -256,6 +257,47 @@ export const trainingService = {
       .sort({ date: 1, hour: 1 })
       .populate("PT", "name email")
       .populate("athlete", "name email");
+  },
+
+  async update(
+    trainingId: string,
+    data: { date?: Date; hour?: string; details?: string; userId: string },
+  ) {
+    const training = await Training.findById(trainingId);
+    if (!training) throw new Error("Training not found");
+
+    let notifify;
+    let sender;
+    if (training.overallStatus === "confirmed") {
+      if (data.userId !== training.PT.toString()) {
+        notifify = training.PT.toString();
+        sender = training.athlete.toString();
+      } else {
+        notifify = training.athlete.toString();
+        sender = training.PT.toString();
+      }
+
+      if (data.details === undefined) {
+        const settings = await settingsService.getByUser(notifify);
+        if (settings.trainingUpdated) {
+          const res = await notificationService.createNotification(
+            sender,
+            "Treino alterado",
+            `O teu treino em ${formatDate(training.date.toString(), training.hour)} foi alterado.`,
+            [notifify],
+          );
+
+          const targetIds = (res.target || []).map((id: any) => id.toString());
+          socketFunction(targetIds, res);
+        }
+      }
+    }
+
+    if (data.date) training.date = data.date;
+    if (data.hour) training.hour = data.hour;
+    if (data.details) training.details = data.details;
+
+    return await training.save();
   },
 };
 

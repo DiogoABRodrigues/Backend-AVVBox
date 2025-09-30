@@ -4,6 +4,7 @@ const TrainingSchema = new Schema({
   date: { type: Date, required: true },
   hour: { type: String, required: true },
   duration: { type: Number, default: 60 },
+  details: { type: String, default: "" },
 
   // PT que participa
   PT: { type: Types.ObjectId, ref: "User", required: true },

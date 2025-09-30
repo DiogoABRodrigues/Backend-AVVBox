@@ -14,6 +14,7 @@ export class SettingsController {
         trainingApproved,
         trainingRejected,
         trainingCanceled,
+        trainingUpdated,
       } = req.body;
       const settings = await settingsService.create(userId, {
         fifteenMin,
@@ -24,6 +25,7 @@ export class SettingsController {
         trainingApproved,
         trainingRejected,
         trainingCanceled,
+        trainingUpdated,
       });
       res.status(201).json(settings);
     } catch (err: any) {

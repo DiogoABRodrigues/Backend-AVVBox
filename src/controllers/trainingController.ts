@@ -103,4 +103,20 @@ export class TrainingController {
       res.status(500).json({ error: err.message });
     }
   }
+
+  async update(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { date, hour, details, userId } = req.body;
+      const training = await trainingService.update(id, {
+        date,
+        hour,
+        details,
+        userId,
+      });
+      res.json(training);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
 }
