@@ -14,7 +14,7 @@ export class TrainingController {
 
   async create(req: Request, res: Response) {
     try {
-      const { date, hour, duration, PT, athlete, proposedBy } = req.body;
+      const { date, hour, duration, PT, athlete, proposedBy, details } = req.body;
       const training = await trainingService.create({
         date,
         hour,
@@ -22,6 +22,7 @@ export class TrainingController {
         PT,
         athlete,
         proposedBy,
+        details,
       });
       res.status(201).json(training);
     } catch (err: any) {
