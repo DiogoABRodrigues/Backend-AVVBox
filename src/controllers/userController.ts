@@ -289,37 +289,4 @@ export const userController = {
       });
     }
   },
-
-  async saveExpoPushToken(req: Request, res: Response) {
-    try {
-      const { userId } = req.params;
-      const { expoPushToken } = req.body;
-
-      if (!expoPushToken || typeof expoPushToken !== "string") {
-        return res.status(400).json({ message: "Expo push token inválido" });
-      }
-
-      const user = await userService.saveExpoPushToken(userId, expoPushToken);
-      res.json({
-        message: "Expo push token salvo com sucesso",
-        user: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          phoneNumber: user.phoneNumber,
-          coach: user.coach,
-          role: user.role,
-          atheletes: user.atheletes,
-          active: user.active,
-          verified: user.verified,
-          expoPushToken: user.expoPushToken,
-        },
-      });
-    } catch (err: any) {
-      res.status(400).json({
-        message: err.message || "Erro ao salvar expo push token",
-        error: err,
-      });
-    }
-  },
 };

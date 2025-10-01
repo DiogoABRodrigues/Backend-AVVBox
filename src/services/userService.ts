@@ -258,14 +258,4 @@ export const userService = {
     }).select("-password");
   },
 
-  async saveExpoPushToken(userId: string, expoPushToken: string) {
-    console.log("Saving Expo Push Token:", expoPushToken);
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { expoPushToken },
-      { new: true },
-    ).select("-password");
-    if (!user) throw new Error("Usuário não encontrado");
-    return user;
-  },
 };
