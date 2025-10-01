@@ -1,9 +1,7 @@
 import { Notification } from "../models/Notifications";
 import { User } from "../models/User";
 import mongoose from "mongoose";
-import { userService } from "./userService";
 import fetch from "node-fetch";
-import axios from "axios";
 
 export const notificationService = {
   async createNotification(
@@ -43,29 +41,28 @@ export const notificationService = {
       target: recipients,
     });
 
-    for (const recipient of recipients) {
-      const user = await User.findById(recipient);
-      if (user) {
+    await Promise.all(
+      recipients.map(async (recipient) => {
         try {
-          await fetch(`https://app.nativenotify.com/api/indie/notification`, {
+          const res = await fetch("https://app.nativenotify.com/api/indie/notification", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              subID: recipient,
-              appId: 32295,
-              appToken: "wyhRSJsJFB6gxzAT0mmfaF",
-              title: title,
+              subID: recipient, // tem de ser o mesmo usado no registerIndieID
+              appId: 32296,
+              appToken: 'ylNJAKNdP1AscDxzPOwcrC',
+              title,
               message: body,
             }),
           });
+          if (!res.ok) {
+            console.error(`Falha ao enviar push para ${recipient}:`, await res.text());
+          }
         } catch (err) {
-          console.error("Erro ao enviar push:", err);
+          console.error(`Erro ao enviar push para ${recipient}:`, err);
         }
-      }
-    }
-
+      })
+    );
     return notification;
   },
 
