@@ -1,8 +1,6 @@
 import { Request, Response } from "express";
 import { notificationService } from "../services/notificationService";
 import { io } from "../../server";
-import { sendPushNotification } from "../utils/notifications";
-import { userService } from "../services/userService";
 
 export const notificationController = {
   async create(req: Request, res: Response) {
