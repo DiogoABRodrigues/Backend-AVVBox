@@ -44,13 +44,13 @@ export const notificationService = {
     await Promise.all(
       recipients.map(async (recipient) => {
         try {
-          const res = await fetch("https://app.nativenotify.com/api/indie/notification", {
+          const res = await fetch(`https://app.nativenotify.com/api/indie/notification`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               subID: recipient, // tem de ser o mesmo usado no registerIndieID
-              appId: 32296,
-              appToken: 'ylNJAKNdP1AscDxzPOwcrC',
+              appId: 32298,
+              appToken: 'FJv06dvuLO2xdBkaBSxXog',
               title,
               message: body,
             }),
