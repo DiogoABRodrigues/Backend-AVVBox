@@ -94,6 +94,16 @@ export class TrainingController {
     }
   }
 
+  async getAllConfirmed(req: Request, res: Response) {
+    try {
+      const { userId } = req.params;
+      const trainings = await trainingService.getAllConfirmed(userId);
+      res.json(trainings);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
   //pending
   async getPending(req: Request, res: Response) {
     try {

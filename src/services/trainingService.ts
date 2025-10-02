@@ -252,6 +252,18 @@ export const trainingService = {
       .populate("athlete", "name email");
   },
 
+  async getAllConfirmed(userId: string) {
+    const userObjectId = new Types.ObjectId(userId);
+
+    return await Training.find({
+      $or: [{ PT: userObjectId }, { athlete: userObjectId }],
+      overallStatus: "confirmed",
+    })
+      .sort({ date: 1, hour: 1 })
+      .populate("PT", "name email")
+      .populate("athlete", "name email");
+  },
+
   async getPending(userId: string) {
     const userObjectId = new Types.ObjectId(userId);
 

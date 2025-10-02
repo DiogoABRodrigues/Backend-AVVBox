@@ -45,6 +45,10 @@ router.get("/next15days/:userId", authMiddleware, (req, res) =>
   trainingController.getUpcomingFifteenDays(req, res),
 );
 
+router.get("/confirmed/:userId", authMiddleware, (req, res) =>
+  trainingController.getAllConfirmed(req, res),
+);
+
 // pending/
 router.get("/pending/:userId", authMiddleware, (req, res) =>
   trainingController.getPending(req, res),
