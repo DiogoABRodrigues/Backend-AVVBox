@@ -19,7 +19,7 @@ const MuscleGroupSchema = new Schema(
 
 const WeightsSchema = new Schema(
   {
-    athlete: { type: Types.ObjectId, ref: "User", required: true },
+    athlete: { type: Types.ObjectId, ref: "User", required: true , index: true },
     triceps: { type: MuscleGroupSchema, default: () => ({ exercises: [] }) },
     biceps: { type: MuscleGroupSchema, default: () => ({ exercises: [] }) },
     shoulders: { type: MuscleGroupSchema, default: () => ({ exercises: [] }) },

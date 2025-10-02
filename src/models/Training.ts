@@ -7,10 +7,10 @@ const TrainingSchema = new Schema({
   details: { type: String, default: "" },
 
   // PT que participa
-  PT: { type: Types.ObjectId, ref: "User", required: true },
+  PT: { type: Types.ObjectId, ref: "User", required: true, index: true },
 
   // Atleta que participa
-  athlete: { type: Types.ObjectId, ref: "User", required: true },
+  athlete: { type: Types.ObjectId, ref: "User", required: true, index: true },
 
   // Quem criou a proposta (PT ou Atleta)
   proposedBy: {
@@ -37,8 +37,8 @@ const TrainingSchema = new Schema({
   overallStatus: {
     type: String,
     enum: ["pending", "confirmed", "rejected", "cancelled"],
-    default: "pending",
-  },
+    default: "pending", 
+    index: true },
 });
 
 export const Training = model("Training", TrainingSchema);

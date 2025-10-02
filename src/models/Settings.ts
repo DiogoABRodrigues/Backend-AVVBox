@@ -1,7 +1,7 @@
 import { Schema, model, Types } from "mongoose";
 
 const SettingsSchema = new Schema({
-  user: { type: Types.ObjectId, ref: "User", required: true },
+  user: { type: Types.ObjectId, ref: "User", required: true, index: true },
   fifteenMin: { type: Boolean, default: false },
   thirtyMin: { type: Boolean, default: false },
   sixtyMin: { type: Boolean, default: false },

@@ -18,7 +18,7 @@ const DaySchema = new Schema(
 );
 
 const AvailabilitySchema = new Schema({
-  PT: { type: Types.ObjectId, ref: "User", required: true },
+  PT: { type: Types.ObjectId, ref: "User", required: true, index: true },
   Monday: {
     type: DaySchema,
     default: () => ({ working: false, intervals: [] }),

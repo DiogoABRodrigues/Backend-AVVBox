@@ -13,7 +13,7 @@ const UserSchema = new Schema({
   coach: [{ type: Types.ObjectId, ref: "User", default: null }, { size: 1 }],
 
   // role do user
-  role: { type: String, enum: ["atleta", "PT", "Admin"], required: true },
+  role: { type: String, enum: ["atleta", "PT", "Admin"], required: true, index: true },
 
   // lista ids de atletas (apenas para PTs)
   atheletes: [{ type: Types.ObjectId, ref: "User", default: [] }],

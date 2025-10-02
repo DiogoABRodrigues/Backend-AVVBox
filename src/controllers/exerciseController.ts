@@ -60,7 +60,6 @@ export class ExerciseController {
 
   async delete(req: Request, res: Response) {
     try {
-      console.log("Request body:", req.body); // Log do corpo da requisição
       const { athleteId, group, _id } = req.body;
       const result = await exerciseService.deleteExercise(
         athleteId,
