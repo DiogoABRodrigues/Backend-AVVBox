@@ -25,4 +25,9 @@ export const settingsService = {
       { new: true, upsert: true, setDefaultsOnInsert: true },
     );
   },
+  
+  async getByUserIds(userIds: string[]) {
+    if (!Array.isArray(userIds) || userIds.length === 0) return [];
+    return await Settings.find({ user: { $in: userIds.map(id => new Types.ObjectId(id)) } });
+  },
 };

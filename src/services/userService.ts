@@ -258,4 +258,9 @@ export const userService = {
     }).select("-password");
   },
 
+  async getByIds(ids: string[]) {
+    if (!Array.isArray(ids) || ids.length === 0) return [];
+    return User.find({ _id: { $in: ids } }).select("-password");
+  },
+
 };

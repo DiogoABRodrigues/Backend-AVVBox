@@ -2,18 +2,24 @@ import cron from "node-cron";
 import { Notification } from "../models/Notifications";
 import { Training } from "../models/Training";
 
-// Agenda para todos os dias à meia-noite
 cron.schedule(
-  "00 00 * * *",
-  () => {
+  "0 0 * * *",
+  async () => {
     console.log("Cronjob diário a correr à meia-noite");
 
-    // apagar treinos com data anterior a hoje
-    const date = Date.now();
-    Training.deleteMany({ date: { $lt: date } }).exec();
+    try {
+      const now = new Date();
 
-    // apagar notificações com target vazio (todos leram)
-    Notification.deleteMany({ target: { $size: 0 } }).exec();
+      // apagar treinos antigos
+      const deletedTrainings = await Training.deleteMany({ date: { $lt: now } });
+      console.log(`Treinos apagados: ${deletedTrainings.deletedCount}`);
+
+      // apagar notificações com target vazio
+      const deletedNotifications = await Notification.deleteMany({ target: { $size: 0 } });
+      console.log(`Notificações apagadas: ${deletedNotifications.deletedCount}`);
+    } catch (err) {
+      console.error("Erro no cron diário:", err);
+    }
   },
   {
     timezone: "Europe/Lisbon",
