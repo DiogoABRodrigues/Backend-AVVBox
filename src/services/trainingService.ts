@@ -34,10 +34,8 @@ export const trainingService = {
 
     //check if there is already a training at the same date and hour for the proposed PT or athlete
     const existingTraining = await Training.findOne({
-      $or: [
-        { PT: new Types.ObjectId(data.PT) },
-        { athlete: new Types.ObjectId(data.athlete) },
-      ],
+      PT: new Types.ObjectId(data.PT),
+      athlete: new Types.ObjectId(data.athlete),
       date: data.date,
       hour: data.hour,
       overallStatus: { $in: ["pending", "confirmed"] },
