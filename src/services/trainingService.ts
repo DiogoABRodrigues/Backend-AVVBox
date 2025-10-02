@@ -32,6 +32,23 @@ export const trainingService = {
       data.proposedBy = "PT"; // Admin cria o treino em nome do PT
     }
 
+    //check if there is already a training at the same date and hour for the proposed PT or athlete
+    const existingTraining = await Training.findOne({
+      $or: [
+        { PT: new Types.ObjectId(data.PT) },
+        { athlete: new Types.ObjectId(data.athlete) },
+      ],
+      date: data.date,
+      hour: data.hour,
+      overallStatus: { $in: ["pending", "confirmed"] },
+    });
+
+    if (existingTraining) {
+      throw new Error(
+        "Já existe um treino agendado para esta data e hora.",
+      );
+    }
+
     const training = new Training({
       date: data.date,
       hour: data.hour,
