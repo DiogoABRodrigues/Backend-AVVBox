@@ -25,8 +25,8 @@ export class TrainingController {
         details,
       });
       res.status(201).json(training);
-    } catch (err: any) {
-      res.status(400).json({ error: err.message });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
     }
   }
 
