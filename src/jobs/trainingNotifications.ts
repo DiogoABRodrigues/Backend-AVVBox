@@ -13,8 +13,28 @@ interface UserSettings {
   fifteenMin?: boolean;
   thirtyMin?: boolean;
   sixtyMin?: boolean;
-  oneTwentyMin?: boolean;
+  onetwentyMin?: boolean;
   [key: string]: boolean | undefined;
+}
+
+// Função para combinar date + hour em um Date object
+function combineDateAndHour(date: Date, hourString: string): Date {
+  const [hours, minutes] = hourString.split(':').map(Number);
+  const combinedDate = new Date(date);
+  combinedDate.setHours(hours, minutes, 0, 0);
+  return combinedDate;
+}
+
+// Função para obter o texto da notificação
+function getNotificationMessage(minutesBefore: number): string {
+  switch (minutesBefore) {
+    case NOTIFY_SIXTY_MIN:
+      return "Falta 1 hora para o teu treino.";
+    case NOTIFY_ONE_TWENTY_MIN:
+      return "Faltam 2 horas para o teu treino.";
+    default:
+      return `Faltam ${minutesBefore} minutos para o teu treino.`;
+  }
 }
 
 // Roda a cada 15 minutos (00, 15, 30, 45)
@@ -26,46 +46,68 @@ cron.schedule("0,15,30,45 * * * *", async () => {
       { minutesBefore: NOTIFY_FIFTEEN_MIN, field: "fifteenMin" },
       { minutesBefore: NOTIFY_THIRTY_MIN, field: "thirtyMin" },
       { minutesBefore: NOTIFY_SIXTY_MIN, field: "sixtyMin" },
-      { minutesBefore: NOTIFY_ONE_TWENTY_MIN, field: "oneTwentyMin" },
+      { minutesBefore: NOTIFY_ONE_TWENTY_MIN, field: "onetwentyMin" },
     ];
 
+    // Buscar todos os treinos confirmados de hoje de uma vez
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
-
     const endOfDay = new Date();
     endOfDay.setHours(23, 59, 59, 999);
 
-    // Busca todos os treinos confirmados de hoje
-    const trainings = await Training.find({
+    const allTrainings = await Training.find({
       date: { $gte: startOfDay, $lte: endOfDay },
       overallStatus: "confirmed",
     });
 
-    if (trainings.length === 0) return;
+    // Debug: mostrar horários dos treinos
+    allTrainings.forEach(t => {
+      const combinedTime = combineDateAndHour(t.date, t.hour);
+    });
 
-    // Obter todos os IDs de utilizadores (atletas + PTs) de uma vez
-    const userIds = Array.from(
-      new Set(trainings.flatMap(t => [t.athlete.toString(), t.PT.toString()]))
+    if (allTrainings.length === 0) {
+      return;
+    }
+
+    // Buscar todos os utilizadores de uma vez
+    const allUserIds = Array.from(
+      new Set(allTrainings.flatMap(t => [t.athlete.toString(), t.PT.toString()]))
     );
 
-    // Buscar todos os utilizadores e settings de uma vez
-    const users = await userService.getByIds(userIds); // precisa criar método getByIds
-    const settingsList = await settingsService.getByUserIds(userIds); // precisa criar método getByUserIds
-
-    // Map de utilizador e settings para acesso rápido
+    
+    const users = await userService.getByIds(allUserIds);
     const userMap = new Map(users.map(u => [u._id.toString(), u]));
+    
+    const settingsList = await settingsService.getByUserIds(allUserIds);
     const settingsMap = new Map(settingsList.map(s => [s.user.toString(), s]));
 
     for (const notify of notifyTimes) {
-      const targetTime = new Date(now.getTime() + notify.minutesBefore * 60000);
-      const roundedMinutes = Math.floor(targetTime.getMinutes() / 15) * 15;
-      targetTime.setMinutes(roundedMinutes, 0, 0);
 
-      for (const training of trainings) {
+      const trainingsToNotify = allTrainings.filter(training => {
+        // Combinar date + hour para obter o horário real do treino
+        const trainingDateTime = combineDateAndHour(training.date, training.hour);
+        
+        // Calcular quanto tempo falta para o treino
+        const timeDiff = trainingDateTime.getTime() - now.getTime();
+        const minutesUntilTraining = timeDiff / (1000 * 60);
+        
+        // Verificar se está dentro da janela de notificação (com margem de 2 minutos)
+        const timeDiffFromTarget = Math.abs(minutesUntilTraining - notify.minutesBefore);
+        const shouldNotify = timeDiffFromTarget <= 2 && minutesUntilTraining > 0;
+        
+        if (shouldNotify) {
+        }
+        
+        return shouldNotify;
+      });
+
+      for (const training of trainingsToNotify) {
         const athlete = userMap.get(training.athlete.toString());
         const pt = userMap.get(training.PT.toString());
 
-        if (!athlete || !pt) continue;
+        if (!athlete || !pt) {
+          continue;
+        }
 
         const athleteSettings = settingsMap.get(athlete._id.toString());
         const ptSettings = settingsMap.get(pt._id.toString());
@@ -76,16 +118,20 @@ cron.schedule("0,15,30,45 * * * *", async () => {
         ].filter(Boolean) as string[];
 
         if (targets.length > 0) {
+          const message = getNotificationMessage(notify.minutesBefore);
+
           await notificationService.createNotification(
-            pt._id.toString(), // id do autor
+            pt._id.toString(),
             "Treino prestes a começar",
-            `Faltam ${notify.minutesBefore} minutos para o teu treino.`,
+            message,
             targets
           );
+        } else {
         }
       }
     }
+
   } catch (err) {
-    console.error("Erro no cron de notificações:", err);
+    console.error("❌ Erro no cron de notificações:", err);
   }
 });

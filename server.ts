@@ -14,6 +14,7 @@ import trainingRoutes from "./src/routes/training";
 import exerciceRoutes from "./src/routes/exercice";
 import "./src/jobs/dailyCleanup";
 import "./src/jobs/wake-up";
+import "./src/jobs/trainingNotifications";
 
 import dotenv from "dotenv";
 

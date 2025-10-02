@@ -38,10 +38,11 @@ async createNotification(
     throw new Error("Target inválido");
   }
 
-  // Cria a notificação principal (sem array enorme de target)
   const notification = await Notification.create({
     title,
     body,
+    sender: new mongoose.Types.ObjectId(senderId),
+    target: recipients.map((id) => new mongoose.Types.ObjectId(id)),
   });
 
   const limit = pLimit(5);
