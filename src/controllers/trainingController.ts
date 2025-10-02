@@ -26,7 +26,7 @@ export class TrainingController {
       });
       res.status(201).json(training);
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+      res.status(400).json({ error: err.message });
     }
   }
 
@@ -37,7 +37,7 @@ export class TrainingController {
       const training = await trainingService.accept(id, userId);
       res.json(training);
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+      res.status(400).json({ error: err.message });
     }
   }
 
