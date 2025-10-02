@@ -6,6 +6,7 @@ import {
   socketFunction,
 } from "../controllers/notificationController";
 import { notificationService } from "./notificationService";
+import { User } from "../models/User";
 
 export const trainingService = {
   // Buscar treinos de um PT (sem rejeitados)
@@ -56,10 +57,11 @@ export const trainingService = {
 
     const settings = await settingsService.getByUser(notify);
     if (settings.trainingPending) {
+      const user = await User.findById(deletedBy)
       const res = await notificationService.createNotification(
         data.proposedBy === "PT" ? data.PT : data.athlete,
         "Novo pedido de treino",
-        `Tens um novo pedido de treino em ${formatDate(data.date.toString(), data.hour)}. Proposto por: ${deletedBy}.`,
+        `Tens um novo pedido de treino em ${formatDate(data.date.toString(), data.hour)}. Proposto por: ${user?.name}.`,
         [notify],
       );
 
@@ -96,10 +98,11 @@ export const trainingService = {
       training.overallStatus = "confirmed";
       const settings = await settingsService.getByUser(notify.toString());
       if (settings.trainingApproved) {
+        const user = await User.findById(deletedBy)
         const res = await notificationService.createNotification(
           userId,
           "Treino confirmado",
-          `O teu treino em ${formatDate(training.date.toString(), training.hour)} foi confirmado por: ${deletedBy}.`,
+          `O teu treino em ${formatDate(training.date.toString(), training.hour)} foi confirmado por: ${user?.name}.`,
           [notify.toString()],
         );
 
@@ -133,10 +136,11 @@ export const trainingService = {
     training.overallStatus = "rejected";
     const settings = await settingsService.getByUser(notify.toString());
     if (settings.trainingRejected) {
+      const user = await User.findById(deletedBy);
       const res = await notificationService.createNotification(
         userId,
         "Treino rejeitado",
-        `O teu treino em ${formatDate(training.date.toString(), training.hour)} foi rejeitado por: ${deletedBy}.`,
+        `O teu treino em ${formatDate(training.date.toString(), training.hour)} foi rejeitado por: ${user?.name}.`,
         [notify.toString()],
       );
 
@@ -186,10 +190,11 @@ export const trainingService = {
     if (training.overallStatus == "confirmed") {
       const settings = await settingsService.getByUser(notify.toString());
       if (settings.trainingCanceled) {
+        const user = await User.findById(deletedBy);
         const res = await notificationService.createNotification(
           userId,
           "Treino cancelado",
-          `O teu treino em ${formatDate(training.date.toString(), training.hour)} foi cancelado por: ${deletedBy}.`,
+          `O teu treino em ${formatDate(training.date.toString(), training.hour)} foi cancelado por: ${user?.name}.`,
           [notify.toString()],
         );
 
