@@ -40,14 +40,15 @@ export const userService = {
       password: hashedPassword,
       role,
       coach: coach || null,
-      athletes: athletes || null,
+      athletes: athletes || [],
       active: active !== undefined ? active : true,
       verified: false,
       verificationToken,
       expoPushToken: null,
     });
+    await Promise.all([
 
-    await measuresService.createMeasure({
+     measuresService.createMeasure({
       user: newUser._id,
       type: "goal",
       weight: 0,
@@ -55,13 +56,15 @@ export const userService = {
       bodyFat: 0,
       muscleMass: 0,
       visceralFat: 0,
-    });
+    }),
 
-    await exerciseService.create(newUser._id.toString());
-    await availabilityService.create({ PT: newUser._id.toString() });
+    exerciseService.create(newUser._id.toString()),
+    
+    availabilityService.create({ PT: newUser._id.toString() }),
 
-    await settingsService.create(newUser._id.toString(), {});
-
+    settingsService.create(newUser._id.toString(), {}),
+    ])
+    
     // Enviar email de verificação
     await emailService.sendVerificationEmail(email, verificationToken);
 

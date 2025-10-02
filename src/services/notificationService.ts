@@ -2,69 +2,89 @@ import { Notification } from "../models/Notifications";
 import { User } from "../models/User";
 import mongoose from "mongoose";
 import fetch from "node-fetch";
+import pLimit from "p-limit";
 
 export const notificationService = {
-  async createNotification(
-    senderId: string,
-    title: string,
-    body: string,
-    target: string[] | "all" | "my",
+
+async createNotification(
+  senderId: string,
+  title: string,
+  body: string,
+  target: string[] | "all" | "my",
+) {
+  const sender = await User.findById(senderId);
+  if (!sender) throw new Error("Usuário remetente não encontrado");
+
+  if (
+    Array.isArray(target) &&
+    target.length === 1 &&
+    (target[0] === "my" || target[0] === "all")
   ) {
-    const sender = await User.findById(senderId);
-    if (!sender) throw new Error("Usuário remetente não encontrado");
+    target = target[0] as "my" | "all";
+  }
 
-    if (
-      Array.isArray(target) &&
-      target.length === 1 &&
-      (target[0] === "my" || target[0] === "all")
-    ) {
-      target = target[0] as "my" | "all";
-    }
+  let recipients: string[] = [];
 
-    let recipients: string[] = [];
+  if (target === "all") {
+    const users = await User.find({ active: true }).select("_id");
+    recipients = users.map((u) => u._id.toString());
+  } else if (target === "my") {
+    recipients = (sender.atheletes || []).map((athlete: any) =>
+      athlete.toString()
+    );
+  } else if (Array.isArray(target)) {
+    recipients = target;
+  } else {
+    throw new Error("Target inválido");
+  }
 
-    if (target === "all") {
-      // Apenas utilizadores ativos
-      const users = await User.find({ active: true });
-      recipients = users.map((u) => u._id.toString());
-    } else if (target === "my") {
-      recipients = sender.atheletes.map((athlete: any) => athlete.toString());
-    } else if (Array.isArray(target)) {
-      recipients = target;
-    } else {
-      throw new Error("Target inválido");
-    }
+  // Cria a notificação principal (sem array enorme de target)
+  const notification = await Notification.create({
+    title,
+    body,
+  });
 
-    const notification = await Notification.create({
-      title,
-      body,
-      target: recipients,
-    });
+  const limit = pLimit(5);
 
-    await Promise.all(
-      recipients.map(async (recipient) => {
+  // Envia notificações individuais ou push
+  await Promise.all(
+    recipients.map((recipient) =>
+      limit(async () => {
         try {
-          const res = await fetch(`https://app.nativenotify.com/api/indie/notification`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              subID: recipient, // tem de ser o mesmo usado no registerIndieID
-              appId: 32298,
-              appToken: 'FJv06dvuLO2xdBkaBSxXog',
-              title,
-              message: body,
-            }),
-          });
+          // Aqui você pode criar sub-notificação na BD se quiser
+          // await NotificationSub.create({ notification: notification._id, user: recipient });
+
+          // Envia push
+          const res = await fetch(
+            `https://app.nativenotify.com/api/indie/notification`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                subID: recipient,
+                appId: 32298,
+                appToken: "FJv06dvuLO2xdBkaBSxXog",
+                title,
+                message: body,
+              }),
+            }
+          );
           if (!res.ok) {
-            console.error(`Falha ao enviar push para ${recipient}:`, await res.text());
+            console.error(
+              `Falha ao enviar push para ${recipient}:`,
+              await res.text()
+            );
           }
         } catch (err) {
           console.error(`Erro ao enviar push para ${recipient}:`, err);
         }
       })
-    );
-    return notification;
-  },
+    )
+  );
+
+  return notification;
+},
+
 
   async getAllNotifications() {
     return Notification.find().sort({ date: -1 });
@@ -77,29 +97,23 @@ export const notificationService = {
   },
 
   async deleteNotificationForUser(notificationId: string, userId: string) {
-    const notification = await Notification.findById(notificationId);
-    if (!notification) throw new Error("Notification não encontrada");
-
-    notification.target.pull(userId);
-    await notification.save();
-    return notification;
+    await Notification.updateOne(
+      { _id: notificationId },
+      { $pull: { target: userId } }
+    );
+    return;
   },
 
   async markAsRead(notificationId: string, userId: string) {
-    const notification = await Notification.findById(notificationId);
-    if (!notification) throw new Error("Notification não encontrada");
+    const updatedNotification = await Notification.findByIdAndUpdate(
+      notificationId,
+      { $addToSet: { readBy: new mongoose.Types.ObjectId(userId) } }, // adiciona só se não existir
+      { new: true } // retorna o documento atualizado
+    );
 
-    const userObjectId = new mongoose.Types.ObjectId(userId);
-    if (
-      !notification.readBy.some(
-        (id: any) => id.toString() === userObjectId.toString(),
-      )
-    ) {
-      notification.readBy.push(userObjectId);
-      await notification.save();
-    }
+    if (!updatedNotification) throw new Error("Notification não encontrada");
 
-    return notification;
+    return updatedNotification;
   },
 
 };
