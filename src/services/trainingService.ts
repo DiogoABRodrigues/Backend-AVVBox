@@ -284,7 +284,21 @@ export const trainingService = {
     if (data.date !== undefined && data.date !== null) training.date = data.date;
     if (data.hour !== undefined && data.hour !== null) training.hour = data.hour;
     if (data.details !== undefined && data.details !== null) training.details = data.details;
+    
+    // mark as proposed and remove the accepted status from the one who is not editing
+    if (data.userId === training.PT.toString()) {
+      training.ptStatus = "accepted";
+      training.athleteStatus = "proposed";
+    } else if (data.userId === training.athlete.toString()) {
+      training.athleteStatus = "accepted";
+      training.ptStatus = "proposed";
+    }
 
+    // If the training was confirmed and is being edited, revert to pending
+    if (training.overallStatus === "confirmed") {
+      training.overallStatus = "pending";
+    }
+    
     const res = await training.save();
 
     const send =
@@ -293,7 +307,7 @@ export const trainingService = {
           new Date(trainingEdited.date).toISOString().split("T")[0]) ||
       (data.hour && data.hour !== trainingEdited.hour);
 
-    if (training.overallStatus === "confirmed") {
+    if (trainingEdited.overallStatus === "confirmed") {
       const settings = await settingsService.getByUser(notifify);
       if (settings.trainingUpdated && send) {
         notificationService.createNotification(
