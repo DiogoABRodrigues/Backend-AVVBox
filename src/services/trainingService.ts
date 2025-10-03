@@ -7,9 +7,13 @@ import { User } from "../models/User";
 
 export const trainingService = {
   async getByPT(ptId: string) {
+    const today = new Date();
+    const todayString = today.toISOString().split("T")[0];
+
     return Training.find({
       PT: new Types.ObjectId(ptId),
       overallStatus: { $ne: "rejected" },
+      date: { $gte: todayString }, // apenas hoje ou dias futuros
     })
       .populate("PT", "name email")
       .populate("athlete", "name email");
@@ -238,9 +242,13 @@ export const trainingService = {
   },
 
   async getAllConfirmed(userId: string) {
+    const today = new Date();
+    const todayString = today.toISOString().split("T")[0];
+    
     return Training.find({
       $or: [{ PT: userId }, { athlete: userId }],
       overallStatus: "confirmed",
+      date: { $gte: todayString },
     })
       .sort({ date: 1, hour: 1 })
       .populate("PT", "name email")
@@ -248,9 +256,13 @@ export const trainingService = {
   },
 
   async getPending(userId: string) {
+    const today = new Date();
+    const todayString = today.toISOString().split("T")[0];
+
     return Training.find({
       $or: [{ PT: userId }, { athlete: userId }],
       overallStatus: "pending",
+      date: { $gte: todayString },
     })
       .sort({ date: 1, hour: 1 })
       .populate("PT", "name email")
