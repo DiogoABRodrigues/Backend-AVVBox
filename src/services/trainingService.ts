@@ -280,6 +280,13 @@ export const trainingService = {
     const notifify = data.userId !== training.PT.toString() ? training.PT.toString() : training.athlete.toString();
     const sender = data.userId !== training.PT.toString() ? training.athlete.toString() : training.PT.toString();
 
+    
+    const sendNotification =
+      (data.date &&
+        new Date(data.date).toISOString().split("T")[0] !==
+          new Date(trainingEdited.date).toISOString().split("T")[0]) ||
+      (data.hour && data.hour !== trainingEdited.hour);
+
 
     if (data.date !== undefined && data.date !== null) training.date = data.date;
     if (data.hour !== undefined && data.hour !== null) training.hour = data.hour;
@@ -288,28 +295,24 @@ export const trainingService = {
     // mark as proposed and remove the accepted status from the one who is not editing
     if (data.userId === training.PT.toString()) {
       training.ptStatus = "accepted";
+      training.proposedBy = "PT";
       training.athleteStatus = "proposed";
     } else if (data.userId === training.athlete.toString()) {
       training.athleteStatus = "accepted";
+      training.proposedBy = "Athlete";
       training.ptStatus = "proposed";
     }
 
     // If the training was confirmed and is being edited, revert to pending
-    if (training.overallStatus === "confirmed") {
+    if (training.overallStatus === "confirmed" && sendNotification) {
       training.overallStatus = "pending";
     }
-    
-    const res = await training.save();
 
-    const send =
-      (data.date &&
-        new Date(data.date).toISOString().split("T")[0] !==
-          new Date(trainingEdited.date).toISOString().split("T")[0]) ||
-      (data.hour && data.hour !== trainingEdited.hour);
+    const res = await training.save();
 
     if (trainingEdited.overallStatus === "confirmed") {
       const settings = await settingsService.getByUser(notifify);
-      if (settings.trainingUpdated && send) {
+      if (settings.trainingUpdated && sendNotification) {
         notificationService.createNotification(
           sender,
           "Treino alterado",
