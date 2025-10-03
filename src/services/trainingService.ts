@@ -29,7 +29,6 @@ export const trainingService = {
     details?: string;
   }) {
     if (data.proposedBy === "Admin") data.proposedBy = "PT";
-
     const existingTraining = await Training.findOne({
       PT: new Types.ObjectId(data.PT),
       athlete: new Types.ObjectId(data.athlete),
@@ -38,6 +37,7 @@ export const trainingService = {
       overallStatus: { $in: ["pending", "confirmed"] },
     });
     if (existingTraining) throw new Error("Já existe um treino agendado para esta data e hora.");
+    const isSelfProposed = data.PT === data.athlete;
 
     const training = new Training({
       date: data.date,
@@ -48,7 +48,7 @@ export const trainingService = {
       proposedBy: data.proposedBy,
       ptStatus: data.proposedBy === "PT" ? "accepted" : "proposed",
       athleteStatus: data.proposedBy === "Athlete" ? "accepted" : "proposed",
-      overallStatus: "pending",
+      overallStatus: isSelfProposed ? "accepted" : "pending",
       details: data.details || "",
     });
 
@@ -275,17 +275,25 @@ export const trainingService = {
   ) {
     const training = await Training.findById(trainingId);
     if (!training) throw new Error("Training not found");
-
+    console.log("o que chegou", data);
+    const trainingEdited = { ...training.toObject() }; 
     const notifify = data.userId !== training.PT.toString() ? training.PT.toString() : training.athlete.toString();
     const sender = data.userId !== training.PT.toString() ? training.athlete.toString() : training.PT.toString();
 
+    
+    if (data.date) training.date = data.date;
+    if (data.hour) training.hour = data.hour;
+    if (data.details) training.details = data.details;
+
+    const res = await training.save();
+
     if (training.overallStatus === "confirmed") {
       const settings = await settingsService.getByUser(notifify);
-      if (settings.trainingUpdated) {
+      if (settings.trainingUpdated && (data.date || data.hour)) {
         notificationService.createNotification(
           sender,
           "Treino alterado",
-          `O teu treino em ${formatDate(training.date.toString(), training.hour)} foi alterado.`,
+          `O teu treino em ${formatDate(trainingEdited.date.toString(), trainingEdited.hour)} foi alterado.`,
           [notifify]
         ).then(res => {
           const targetIds = (res.target || []).map((id: any) => id.toString());
@@ -294,11 +302,8 @@ export const trainingService = {
       }
     }
 
-    if (data.date) training.date = data.date;
-    if (data.hour) training.hour = data.hour;
-    if (data.details) training.details = data.details;
 
-    return training.save();
+    return res;
   },
 };
 
