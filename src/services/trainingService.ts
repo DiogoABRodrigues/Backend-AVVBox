@@ -48,7 +48,7 @@ export const trainingService = {
       proposedBy: data.proposedBy,
       ptStatus: data.proposedBy === "PT" ? "accepted" : "proposed",
       athleteStatus: data.proposedBy === "Athlete" ? "accepted" : "proposed",
-      overallStatus: isSelfProposed ? "accepted" : "pending",
+      overallStatus: isSelfProposed ? "confirmed" : "pending",
       details: data.details || "",
     });
 
@@ -271,10 +271,20 @@ export const trainingService = {
 
   async update(
     trainingId: string,
-    data: { date?: Date; hour?: string; details?: string; userId: string }
+    data: { date?: Date; hour?: string; details?: string; userId: string; PT: string; athlete: string }
   ) {
     const training = await Training.findById(trainingId);
     if (!training) throw new Error("Training not found");
+
+    const existingTraining = await Training.findOne({
+      PT: new Types.ObjectId(data.PT),
+      athlete: new Types.ObjectId(data.athlete),
+      date: data.date,
+      hour: data.hour,
+      overallStatus: { $in: ["pending", "confirmed"] },
+    });
+    if (existingTraining) throw new Error("Já existe um treino agendado para esta data e hora.");
+
     const trainingEdited = { ...training.toObject() }; 
     const notifify = data.userId !== training.PT.toString() ? training.PT.toString() : training.athlete.toString();
     const sender = data.userId !== training.PT.toString() ? training.athlete.toString() : training.PT.toString();

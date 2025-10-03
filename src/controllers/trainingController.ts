@@ -118,12 +118,14 @@ export class TrainingController {
   async update(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { date, hour, details, userId } = req.body;
+      const { date, hour, details, userId, PT, athlete } = req.body;
       const training = await trainingService.update(id, {
         date,
         hour,
         details,
         userId,
+        PT,
+        athlete
       });
       res.json(training);
     } catch (err: any) {
