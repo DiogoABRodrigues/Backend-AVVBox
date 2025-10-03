@@ -275,21 +275,21 @@ export const trainingService = {
   ) {
     const training = await Training.findById(trainingId);
     if (!training) throw new Error("Training not found");
-    console.log("o que chegou", data);
     const trainingEdited = { ...training.toObject() }; 
     const notifify = data.userId !== training.PT.toString() ? training.PT.toString() : training.athlete.toString();
     const sender = data.userId !== training.PT.toString() ? training.athlete.toString() : training.PT.toString();
 
-    
-    if (data.date) training.date = data.date;
-    if (data.hour) training.hour = data.hour;
-    if (data.details) training.details = data.details;
+
+    if (data.date !== undefined && data.date !== null) training.date = data.date;
+    if (data.hour !== undefined && data.hour !== null) training.hour = data.hour;
+    if (data.details !== undefined && data.details !== null) training.details = data.details;
 
     const res = await training.save();
 
+    const send = (data.date && data.date.toString() !== trainingEdited.date.toString()) || (data.hour && data.hour !== trainingEdited.hour);
     if (training.overallStatus === "confirmed") {
       const settings = await settingsService.getByUser(notifify);
-      if (settings.trainingUpdated && (data.date || data.hour)) {
+      if (settings.trainingUpdated && send) {
         notificationService.createNotification(
           sender,
           "Treino alterado",

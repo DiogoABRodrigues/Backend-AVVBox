@@ -119,7 +119,6 @@ export class TrainingController {
     try {
       const { id } = req.params;
       const { date, hour, details, userId } = req.body;
-      console.log("o que chegou", { date, hour, details, userId });
       const training = await trainingService.update(id, {
         date,
         hour,
