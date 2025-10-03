@@ -287,8 +287,12 @@ export const trainingService = {
 
     const res = await training.save();
 
-    const send = (data.date && data.date.toString() !== trainingEdited.date.toString()) || (data.hour && data.hour !== trainingEdited.hour);
-    console.log("data.date.strin", data.date?.toString(),"trainingEdited.date.toString()", trainingEdited.date.toString(), "data.hour.toString()", data.hour?.toString(), "trainingEdited.hour", trainingEdited.hour.toString());
+    const send =
+      (data.date &&
+        new Date(data.date).toISOString().split("T")[0] !==
+          new Date(trainingEdited.date).toISOString().split("T")[0]) ||
+      (data.hour && data.hour !== trainingEdited.hour);
+
     if (training.overallStatus === "confirmed") {
       const settings = await settingsService.getByUser(notifify);
       if (settings.trainingUpdated && send) {
