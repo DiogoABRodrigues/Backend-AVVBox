@@ -38,10 +38,10 @@ function getNotificationMessage(minutesBefore: number): string {
 }
 
 // Roda a cada 15 minutos (00, 15, 30, 45)
-cron.schedule("0,15,30,45 * * * *", async () => {
+cron.schedule("1 * * * *", async () => {
   try {
     const now = new Date();
-    console.log("⏰ Agora (Lisboa):", new Date().toLocaleString("pt-PT", { timeZone: "Europe/Lisbon" }));
+
     const notifyTimes = [
       { minutesBefore: NOTIFY_FIFTEEN_MIN, field: "fifteenMin" },
       { minutesBefore: NOTIFY_THIRTY_MIN, field: "thirtyMin" },
@@ -63,6 +63,7 @@ cron.schedule("0,15,30,45 * * * *", async () => {
     // Debug: mostrar horários dos treinos
     allTrainings.forEach(t => {
       const combinedTime = combineDateAndHour(t.date, t.hour);
+      console.log(`Treino ID: ${t._id}, Horário combinado: ${combinedTime}`);
     });
 
     if (allTrainings.length === 0) {
@@ -132,10 +133,6 @@ cron.schedule("0,15,30,45 * * * *", async () => {
     }
 
   } catch (err) {
-      console.error("❌ Erro no cron de notificações:", err);
-    }
-  },
-  {
-    timezone: "Europe/Lisbon",
+    console.error("❌ Erro no cron de notificações:", err);
   }
-);
+});
