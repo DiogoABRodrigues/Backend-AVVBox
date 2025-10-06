@@ -41,7 +41,7 @@ function getNotificationMessage(minutesBefore: number): string {
 cron.schedule("0,15,30,45 * * * *", async () => {
   try {
     const now = new Date();
-
+    console.log("⏰ Agora (Lisboa):", new Date().toLocaleString("pt-PT", { timeZone: "Europe/Lisbon" }));
     const notifyTimes = [
       { minutesBefore: NOTIFY_FIFTEEN_MIN, field: "fifteenMin" },
       { minutesBefore: NOTIFY_THIRTY_MIN, field: "thirtyMin" },
@@ -132,6 +132,10 @@ cron.schedule("0,15,30,45 * * * *", async () => {
     }
 
   } catch (err) {
-    console.error("❌ Erro no cron de notificações:", err);
+      console.error("❌ Erro no cron de notificações:", err);
+    }
+  },
+  {
+    timezone: "Europe/Lisbon",
   }
-});
+);
