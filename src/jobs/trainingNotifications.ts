@@ -38,7 +38,7 @@ function getNotificationMessage(minutesBefore: number): string {
 }
 
 // Roda a cada 15 minutos (00, 15, 30, 45)
-cron.schedule("1 * * * *", async () => {
+cron.schedule("0,15,30,45 * * * *", async () => {
   try {
     const now = new Date();
 
