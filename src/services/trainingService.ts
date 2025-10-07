@@ -349,18 +349,25 @@ const formatDate = (dateString: string, time: string) => {
 };
 
 function combineDateAndHourLocal(date: Date, hourString: string): Date {
-  // Cria uma data no fuso horário local
-  const localDate = new Date(date);
-  
-  // Usa os componentes de data locais
-  const year = localDate.getFullYear();
-  const month = localDate.getMonth();
-  const day = localDate.getDate();
+  // Converte a data para string no formato YYYY-MM-DD no fuso horário local
+  const localDateString = date.toLocaleDateString('pt-PT'); // Formato: DD/MM/YYYY
+  const [day, month, year] = localDateString.split('/').map(Number);
   
   const [hour, minute] = hourString.split(":").map(Number);
   
-  // Cria a data final no fuso horário local
-  const trainingDateTime = new Date(year, month, day, hour, minute, 0, 0);
+  // Cria a data final no fuso horário local de Portugal
+  const trainingDateTime = new Date(year, month - 1, day, hour, minute, 0, 0);
   
   return trainingDateTime;
+}
+
+// Função auxiliar para debug
+function debugDates(trainingDateTime: Date) {
+  const now = new Date();
+  console.log(`📍 DEBUG DATES:`);
+  console.log(`   Agora (UTC): ${now.toISOString()}`);
+  console.log(`   Agora (Local): ${now.toString()}`);
+  console.log(`   Treino (UTC): ${trainingDateTime.toISOString()}`);
+  console.log(`   Treino (Local): ${trainingDateTime.toString()}`);
+  console.log(`   Diferença em minutos: ${Math.round((trainingDateTime.getTime() - now.getTime()) / (1000 * 60))}`);
 }
