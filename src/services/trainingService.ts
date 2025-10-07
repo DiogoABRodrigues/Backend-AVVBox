@@ -190,14 +190,13 @@ export const trainingService = {
         User.findById(deletedBy)
       ]);
 
-      const trainingDateTime = new Date(training.date);
-      const [hour, minute] = training.hour.split(":").map(Number);
-      trainingDateTime.setHours(hour, minute, 0, 0);
+     const trainingDateTime = combineDateAndHourLocal(training.date, training.hour);
 
       const now = new Date();
       const timeDiff = trainingDateTime.getTime() - now.getTime();
       const minutesUntilTraining = Math.round(timeDiff / (1000 * 60));
-      console.log(`⏰ Agora são ${now.getTime()}: ${training._id} é às ${trainingDateTime.getTime()} em ${minutesUntilTraining} minutos.`);
+              console.log(`🕒 Agora: ${now.toISOString()}, Treino: ${trainingDateTime.toISOString()}, Minutos até o treino: ${minutesUntilTraining}`);
+
       const shouldNotify = settings.trainingCanceled && minutesUntilTraining > 0;
 
       if (shouldNotify) {
@@ -348,3 +347,12 @@ const formatDate = (dateString: string, time: string) => {
   const weekday = weekdays[date.getDay()];
   return `${day}/${month}, ${weekday} às ${time}`;
 };
+
+function combineDateAndHourLocal(date: Date, hourString: string): Date {
+  // extrai a parte da data (em UTC) e recria em horário local
+  const [year, month, day] = date.toISOString().split("T")[0].split("-").map(Number);
+  const [hour, minute] = hourString.split(":").map(Number);
+
+  // new Date() com ano, mês, dia, hora, minuto → usa hora local de Lisboa
+  return new Date(year, month - 1, day, hour, minute, 0, 0);
+}
