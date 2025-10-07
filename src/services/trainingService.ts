@@ -190,7 +190,17 @@ export const trainingService = {
         User.findById(deletedBy)
       ]);
 
-      if (settings.trainingCanceled) {
+      const trainingDateTime = new Date(training.date);
+      const [hour, minute] = training.hour.split(":").map(Number);
+      trainingDateTime.setHours(hour, minute, 0, 0);
+
+      const now = new Date();
+      const timeDiff = trainingDateTime.getTime() - now.getTime();
+      const minutesUntilTraining = Math.round(timeDiff / (1000 * 60));
+      console.log(`⏰ Agora são ${now.getTime()}: ${training._id} é às ${trainingDateTime.getTime()} em ${minutesUntilTraining} minutos.`);
+      const shouldNotify = settings.trainingCanceled && minutesUntilTraining > 0;
+
+      if (shouldNotify) {
         notificationService.createNotification(
           userId,
           "Treino cancelado",

@@ -90,13 +90,14 @@ cron.schedule("0,15,30,45 * * * *", async () => {
         
         // Calcular quanto tempo falta para o treino
         const timeDiff = trainingDateTime.getTime() - now.getTime();
-        const minutesUntilTraining = timeDiff / (1000 * 60);
-        
+        const minutesUntilTraining = Math.round(timeDiff / (1000 * 60));
+
         // Verificar se está dentro da janela de notificação (com margem de 2 minutos)
         const timeDiffFromTarget = Math.abs(minutesUntilTraining - notify.minutesBefore);
         const shouldNotify = timeDiffFromTarget <= 2 && minutesUntilTraining > 0;
-        
+
         if (shouldNotify) {
+          console.log(`✅ São ${now.getTime()}: ${training._id} em ${minutesUntilTraining} minutos.`);
         }
         
         return shouldNotify;
