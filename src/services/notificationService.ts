@@ -65,8 +65,16 @@ async createNotification(
                 subID: recipient,
                 appId: 32298,
                 appToken: "FJv06dvuLO2xdBkaBSxXog",
-                title,
-                message: body,
+                // 🔥 MUDANÇA CRUCIAL: Usar "data" em vez de "title/message"
+                data: {
+                  title: title,
+                  message: body,
+                  message_id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // ID único
+                  timestamp: new Date().toISOString(),
+                  // Adicione qualquer dado extra que precisar
+                  type: "chat_message",
+                  sender_id: recipient // ou qualquer ID do remetente
+                }
               }),
             }
           );

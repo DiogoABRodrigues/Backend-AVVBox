@@ -96,9 +96,8 @@ cron.schedule("0,15,30,45 * * * *", async () => {
         const timeDiffFromTarget = Math.abs(minutesUntilTraining - notify.minutesBefore);
         const shouldNotify = timeDiffFromTarget <= 2 && minutesUntilTraining > 0;
 
-        if (shouldNotify) {
-          console.log(`✅ São ${now.getTime()}: ${training._id} em ${minutesUntilTraining} minutos.`);
-        }
+        //imprimir data e hora atual, data e hora do treino, minutos até o treino e se deve notificar
+        console.log(`🕒 Agora: ${now.toISOString()}, Treino: ${trainingDateTime.toISOString()}, Minutos até o treino: ${minutesUntilTraining}, Deve notificar (${notify.minutesBefore} min): ${shouldNotify}`);
         
         return shouldNotify;
       });
