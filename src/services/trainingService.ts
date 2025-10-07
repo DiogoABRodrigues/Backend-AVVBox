@@ -349,17 +349,18 @@ const formatDate = (dateString: string, time: string) => {
 };
 
 function combineDateAndHourLocal(date: Date, hourString: string): Date {
-  // Extrai a data com base no fuso local, não UTC
-  const localDate = new Date(date); // já converte automaticamente de UTC → local
+  // Cria uma data no fuso horário local
+  const localDate = new Date(date);
+  
+  // Usa os componentes de data locais
+  const year = localDate.getFullYear();
+  const month = localDate.getMonth();
+  const day = localDate.getDate();
+  
   const [hour, minute] = hourString.split(":").map(Number);
-
-  return new Date(
-    localDate.getFullYear(),
-    localDate.getMonth(),
-    localDate.getDate(),
-    hour,
-    minute,
-    0,
-    0
-  );
+  
+  // Cria a data final no fuso horário local
+  const trainingDateTime = new Date(year, month, day, hour, minute, 0, 0);
+  
+  return trainingDateTime;
 }
