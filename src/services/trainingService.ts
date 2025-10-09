@@ -169,53 +169,6 @@ export const trainingService = {
     return training.save();
   },
 
-  async delete(trainingId: string, userId: string) {
-    const training = await Training.findById(trainingId);
-    if (!training) throw new Error("Training not found");
-
-    const userObjectId = new Types.ObjectId(userId);
-    let notify, deletedBy;
-
-    if ((training.PT as Types.ObjectId).equals(userObjectId)) {
-      notify = training.athlete;
-      deletedBy = training.PT;
-    } else if ((training.athlete as Types.ObjectId).equals(userObjectId)) {
-      notify = training.PT;
-      deletedBy = training.athlete;
-    } else throw new Error("User not part of this training");
-
-    if (training.overallStatus === "confirmed") {
-      const [settings, user] = await Promise.all([
-        settingsService.getByUser(notify.toString()),
-        User.findById(deletedBy)
-      ]);
-
-     const trainingDateTime = combineDateAndHourLocal(training.date, training.hour);
-
-      const now = new Date();
-      const timeDiff = trainingDateTime.getTime() - now.getTime();
-      const minutesUntilTraining = Math.round(timeDiff / (1000 * 60));
-              console.log(`🕒 Agora: ${now.toISOString()}, Treino: ${trainingDateTime.toISOString()}, Minutos até o treino: ${minutesUntilTraining}`);
-
-      const shouldNotify = settings.trainingCanceled && minutesUntilTraining > 0;
-
-      if (shouldNotify) {
-        notificationService.createNotification(
-          userId,
-          "Treino cancelado",
-          `O teu treino em ${formatDate(training.date.toString(), training.hour)} foi cancelado por: ${user?.name}.`,
-          [notify.toString()]
-        ).then(res => {
-          const targetIds = (res.target || []).map((id: any) => id.toString());
-          socketFunction(targetIds, res);
-        });
-      }
-    }
-
-    await Training.deleteOne({ _id: trainingId });
-    return training; // retorna info do treino excluído
-  },
-
   async getUpcoming(userId: string) {
     const now = new Date();
     const sevenDaysLater = new Date();
@@ -337,6 +290,56 @@ export const trainingService = {
 
     return res;
   },
+
+async delete(trainingId: string, userId: string) {
+  const training = await Training.findById(trainingId);
+  if (!training) throw new Error("Training not found");
+
+  const userObjectId = new Types.ObjectId(userId);
+  let notify, deletedBy;
+
+  if ((training.PT as Types.ObjectId).equals(userObjectId)) {
+    notify = training.athlete;
+    deletedBy = training.PT;
+  } else if ((training.athlete as Types.ObjectId).equals(userObjectId)) {
+    notify = training.PT;
+    deletedBy = training.athlete;
+  } else throw new Error("User not part of this training");
+
+  if (training.overallStatus === "confirmed") {
+    const [settings, user] = await Promise.all([
+      settingsService.getByUser(notify.toString()),
+      User.findById(deletedBy)
+    ]);
+
+    // ✅ combinar hora e data com fuso de Lisboa
+    const trainingDateTime = combineDateAndHourLisbon(training.date, training.hour);
+
+    // ✅ obter hora atual de Lisboa
+    const now = getNowInLisbon();
+
+    const timeDiff = trainingDateTime.getTime() - now.getTime();
+    const minutesUntilTraining = Math.round(timeDiff / (1000 * 60));
+
+    const shouldNotify = settings.trainingCanceled && minutesUntilTraining > 0;
+
+    if (shouldNotify) {
+      notificationService.createNotification(
+        userId,
+        "Treino cancelado",
+        `O teu treino em ${formatDate(training.date.toString(), training.hour)} foi cancelado por: ${user?.name}.`,
+        [notify.toString()]
+      ).then(res => {
+        const targetIds = (res.target || []).map((id: any) => id.toString());
+        socketFunction(targetIds, res);
+      });
+    }
+  }
+
+  await Training.deleteOne({ _id: trainingId });
+  return training; // retorna info do treino excluído
+},
+
 };
 
 const formatDate = (dateString: string, time: string) => {
@@ -348,26 +351,13 @@ const formatDate = (dateString: string, time: string) => {
   return `${day}/${month}, ${weekday} às ${time}`;
 };
 
-function combineDateAndHourLocal(date: Date, hourString: string): Date {
-  // Converte a data para string no formato YYYY-MM-DD no fuso horário local
-  const localDateString = date.toLocaleDateString('pt-PT'); // Formato: DD/MM/YYYY
-  const [day, month, year] = localDateString.split('/').map(Number);
-  
-  const [hour, minute] = hourString.split(":").map(Number);
-  
-  // Cria a data final no fuso horário local de Portugal
-  const trainingDateTime = new Date(year, month - 1, day, hour, minute, 0, 0);
-  
-  return trainingDateTime;
+function getNowInLisbon(): Date {
+  return new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Lisbon" }));
 }
 
-// Função auxiliar para debug
-function debugDates(trainingDateTime: Date) {
-  const now = new Date();
-  console.log(`📍 DEBUG DATES:`);
-  console.log(`   Agora (UTC): ${now.toISOString()}`);
-  console.log(`   Agora (Local): ${now.toString()}`);
-  console.log(`   Treino (UTC): ${trainingDateTime.toISOString()}`);
-  console.log(`   Treino (Local): ${trainingDateTime.toString()}`);
-  console.log(`   Diferença em minutos: ${Math.round((trainingDateTime.getTime() - now.getTime()) / (1000 * 60))}`);
+function combineDateAndHourLisbon(date: Date, hourString: string): Date {
+  const [hours, minutes] = hourString.split(":").map(Number);
+  const combined = new Date(date.toLocaleString("en-US", { timeZone: "Europe/Lisbon" }));
+  combined.setHours(hours, minutes, 0, 0);
+  return combined;
 }

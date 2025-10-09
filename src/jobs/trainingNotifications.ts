@@ -36,11 +36,28 @@ function getNotificationMessage(minutesBefore: number): string {
       return `Faltam ${minutesBefore} minutos para o teu treino.`;
   }
 }
+function getNowInLisbon(): Date {
+  return new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Lisbon" }));
+}
 
-// Roda a cada 15 minutos (00, 15, 30, 45)
+function getStartAndEndOfLisbonDay(): { startOfDay: Date; endOfDay: Date } {
+  const nowLisbon = getNowInLisbon();
+  const startOfDay = new Date(nowLisbon);
+  startOfDay.setHours(0, 0, 0, 0);
+
+  const endOfDay = new Date(nowLisbon);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  return { startOfDay, endOfDay };
+}
+
+// correr Às 00 15 30 e 45 minutos de cada hora
 cron.schedule("0,15,30,45 * * * *", async () => {
   try {
-    const now = new Date();
+    const now = getNowInLisbon();
+    console.log(`🕒 Agora (Lisboa): ${now.toLocaleString("pt-PT", { timeZone: "Europe/Lisbon" })}`);
+
+    const { startOfDay, endOfDay } = getStartAndEndOfLisbonDay();
 
     const notifyTimes = [
       { minutesBefore: NOTIFY_FIFTEEN_MIN, field: "fifteenMin" },
@@ -49,66 +66,45 @@ cron.schedule("0,15,30,45 * * * *", async () => {
       { minutesBefore: NOTIFY_ONE_TWENTY_MIN, field: "onetwentyMin" },
     ];
 
-    // Buscar todos os treinos confirmados de hoje de uma vez
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date();
-    endOfDay.setHours(23, 59, 59, 999);
-
+    // Buscar todos os treinos confirmados do dia atual em Lisboa
     const allTrainings = await Training.find({
       date: { $gte: startOfDay, $lte: endOfDay },
       overallStatus: "confirmed",
     });
 
-    // Debug: mostrar horários dos treinos
     allTrainings.forEach(t => {
       const combinedTime = combineDateAndHour(t.date, t.hour);
       console.log(`Treino ID: ${t._id}, Horário combinado: ${combinedTime}`);
     });
 
-    if (allTrainings.length === 0) {
-      return;
-    }
+    if (allTrainings.length === 0) return;
 
-    // Buscar todos os utilizadores de uma vez
     const allUserIds = Array.from(
       new Set(allTrainings.flatMap(t => [t.athlete.toString(), t.PT.toString()]))
     );
 
-    
     const users = await userService.getByIds(allUserIds);
     const userMap = new Map(users.map(u => [u._id.toString(), u]));
-    
     const settingsList = await settingsService.getByUserIds(allUserIds);
     const settingsMap = new Map(settingsList.map(s => [s.user.toString(), s]));
 
     for (const notify of notifyTimes) {
-
       const trainingsToNotify = allTrainings.filter(training => {
-        // Combinar date + hour para obter o horário real do treino
         const trainingDateTime = combineDateAndHour(training.date, training.hour);
-        
-        // Calcular quanto tempo falta para o treino
-        const timeDiff = trainingDateTime.getTime() - now.getTime();
+
+        const timeDiff = trainingDateTime.getTime() - now.getTime(); // ✅ comparar com hora de Lisboa
         const minutesUntilTraining = Math.round(timeDiff / (1000 * 60));
 
-        // Verificar se está dentro da janela de notificação (com margem de 2 minutos)
         const timeDiffFromTarget = Math.abs(minutesUntilTraining - notify.minutesBefore);
         const shouldNotify = timeDiffFromTarget <= 2 && minutesUntilTraining > 0;
 
-        //imprimir data e hora atual, data e hora do treino, minutos até o treino e se deve notificar
-        console.log(`🕒 Agora: ${now.toISOString()}, Treino: ${trainingDateTime.toISOString()}, Minutos até o treino: ${minutesUntilTraining}, Deve notificar (${notify.minutesBefore} min): ${shouldNotify}`);
-        
         return shouldNotify;
       });
 
       for (const training of trainingsToNotify) {
         const athlete = userMap.get(training.athlete.toString());
         const pt = userMap.get(training.PT.toString());
-
-        if (!athlete || !pt) {
-          continue;
-        }
+        if (!athlete || !pt) continue;
 
         const athleteSettings = settingsMap.get(athlete._id.toString());
         const ptSettings = settingsMap.get(pt._id.toString());
@@ -120,18 +116,15 @@ cron.schedule("0,15,30,45 * * * *", async () => {
 
         if (targets.length > 0) {
           const message = getNotificationMessage(notify.minutesBefore);
-
           await notificationService.createNotification(
             pt._id.toString(),
             "Treino prestes a começar",
             message,
             targets
           );
-        } else {
         }
       }
     }
-
   } catch (err) {
     console.error("❌ Erro no cron de notificações:", err);
   }
